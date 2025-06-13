@@ -1,0 +1,75 @@
+Here’s what we need to do, once and for all, to fix both the port‐binding conflict and the stray SPA fallback hijacking /jwt:
+
+⸻
+
+1. Stop hard-coding 5000 in your compiled server
+
+In server/index.ts (the source that compiles to dist/index.js), change your listen call from:
+
+// ❌ this always binds 5000
+app.listen(5000, () => {
+  console.log('express serving on port 5000');
+});
+
+to:
+
+// ✅ respect Replit’s PORT env var, fall back to 3000 locally
+const PORT = parseInt(process.env.PORT || '3000', 10);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`express serving on port ${PORT}`);
+});
+
+That ensures every build of your server picks up Replit’s assigned port instead of trying to grab 5000.
+
+⸻
+
+2. Exclude /jwt/* from your SPA fallback
+
+Also in server/index.ts, move your SPA catch-all after you register your /api and /jwt routers, and use a single regex:
+
+// after all app.use('/api', …) and app.use('/jwt', …):
+
+// serve static files
+app.use(express.static(path.join(__dirname, '../public')));
+
+// only fall back for true client-side routes
+app.get(/^(?!\/api\/|\/jwt\/).*/, (_req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+This guarantees your /jwt/register endpoint never gets swallowed by the HTML fallback.
+
+⸻
+
+3. Roll out a minimal production entry point
+
+Now your production-deployment.js can be the simplest possible:
+
+// production-deployment.js
+// ———————————————
+// Set up Replit’s PORT and hand off to your compiled server
+process.env.PORT = process.env.PORT || '3000';
+await import('./dist/index.js');
+
+Nothing more. Your compiled code now:
+	1.	Listens on the correct port
+	2.	Registers both /api/* and /jwt/* routes
+	3.	Mounts SPA fallback correctly
+
+⸻
+
+Deployment steps
+	1.	Rebuild your dist bundles:
+
+npm ci && npm run build
+
+
+	2.	Redeploy on Replit (use node production-deployment.js as the run command).
+
+After that:
+	•	Health at GET /health → 200
+	•	JWT signup at POST /jwt/register → JSON 201/200
+	•	Stripe endpoints under /api → work as before
+	•	No more EADDRINUSE on port 5000
+
+Let me know once you’ve pushed these three changes so we can confirm signup, payments and everything else are back on track!

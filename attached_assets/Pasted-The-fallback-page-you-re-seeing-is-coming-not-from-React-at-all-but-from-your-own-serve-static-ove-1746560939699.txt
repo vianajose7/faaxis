@@ -1,0 +1,96 @@
+The “fallback” page you’re seeing is coming not from React at all but from your own serve‑static‑override.ts (the createFallbackHtml), because none of your Express routes (static, API, or SPA catch‑all) ever matched before it. Let’s rip that out and replace it with a single, clear “serve index.html for everything except /api and static files” approach.
+
+⸻
+
+1) Remove your custom fallback
+
+In server/serve‑static‑override.ts, comment out or delete the entire
+
+app.get('*', (_req, res) => {
+  res.status(200).send(createFallbackHtml());
+});
+
+That handler is intercepting all requests and returning your fallback HTML. We want to replace it with a proper SPA catch‑all below.
+
+⸻
+
+2) Rewire your main server file
+
+Open server/index.ts (or wherever you compose your Express app) and make it look like this:
+
+import express from 'express';
+import path from 'path';
+import apiRouter from './routes';    // your existing /api routes
+
+const app = express();
+
+// 1) Serve real static assets first
+app.use(
+  express.static(
+    path.resolve(__dirname, '../client/dist')   // ← point to your built front‑end
+  )
+);
+
+// 2) Mount your JSON/API endpoints
+app.use(express.json());
+app.use('/api', apiRouter);
+
+// 3) SPA “history API fallback” for all other GETs
+//    This will serve index.html (your React app) for routes like /reset-password
+app.get(/^\/(?!api).*/, (_req, res) => {
+  res.sendFile(path.resolve(__dirname, '../client/dist/index.html'));
+});
+
+// 4) Finally, any request that still falls through is a true 404
+app.use((_req, res) => {
+  res.status(404).send('Not Found');
+});
+
+export default app;
+
+Why this order matters
+	1.	Static middleware serves any real file (JS, CSS, images).
+	2.	/api handles API calls—nothing under /api will hit your SPA catch‑all.
+	3.	SPA catch‑all (app.get(/^\/(?!api).*/, …)) serves index.html for any other path—so React Router can handle /reset-password?token=… or /admin.
+	4.	True 404 only after all of the above.
+
+⸻
+
+3) Verify your client routes
+
+In client/src/App.tsx ensure you have:
+
+<BrowserRouter>
+  <Routes>
+    <Route path="/reset-password" element={<ResetPasswordPage />} />
+    {/* …other real routes… */}
+    <Route path="*" element={<NotFoundPage />} />
+  </Routes>
+</BrowserRouter>
+
+	•	The /reset-password route must appear before the "*" route.
+	•	Your <NotFoundPage /> will still render for any path React doesn’t know (e.g. /admin if you want 404).
+
+⸻
+
+4) Build & restart
+	1.	Rebuild your front‑end:
+
+cd client
+npm run build    # produces client/dist
+
+
+	2.	Restart your server so the new routing order takes effect.
+	3.	Test in the browser (or via curl):
+
+curl -I "https://fa-axis.replit.app/reset-password?token=abc"
+# should return 200 OK and HTML, not “Not Found”
+
+curl -I https://fa-axis.replit.app/admin
+# should return 200 OK (index.html served) then React shows your 404 page
+
+
+
+After that, your React app will load for /reset-password?token=… (so your ResetPasswordPage component can read the token and render), and it will also load for /admin so your React <Route path="*"> can present a 404.
+
+Let me know if—after removing the old fallback and applying this ordering—you still see “Not Found,” and we’ll inspect your client/dist path or any leftover middleware.

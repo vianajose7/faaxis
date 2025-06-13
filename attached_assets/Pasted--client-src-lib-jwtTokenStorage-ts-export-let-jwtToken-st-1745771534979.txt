@@ -1,0 +1,90 @@
+/* ─── client/src/lib/jwtTokenStorage.ts ──────────────────────────────── */
+export let jwtToken: string | null =
+  typeof window !== 'undefined' ? localStorage.getItem('jwtToken') : null;
+
+export function setJwtTokenForAuth(token: string | null) {
+  jwtToken = token;
+  if (typeof window !== 'undefined') {
+    if (token) localStorage.setItem('jwtToken', token);
+    else localStorage.removeItem('jwtToken');
+  }
+}
+/* ────────────────────────────────────────────────────────────────────── */
+
+/* ─── client/src/pages/auth-test-page.tsx (or your login page) ───────── */
+import { useState } from 'react';
+import { apiRequest } from '@/lib/queryClient';
+import { setJwtTokenForAuth } from '@/lib/jwtTokenStorage';
+import { useJwtAuth } from '@/hooks/use-jwt-auth';
+
+export default function AuthTestPage() {
+  const { user, authenticated } = useJwtAuth();
+  const [loginData, setLoginData] = useState({ username: 'demo', password: 'demo123456' });
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();                           // ✅ STOP full-page refresh
+    const res = await apiRequest('POST', '/api/jwt/login', loginData);
+    const { token, user } = await res.json();
+
+    // save token globally + to localStorage
+    setJwtTokenForAuth(token);
+    // Optionally update local React context if your hook exposes a setter
+    // setUser(user);
+
+    // no window.location.reload() here!
+  }
+
+  async function handleLogout() {
+    await apiRequest('POST', '/api/jwt/logout');
+    setJwtTokenForAuth(null);
+    // setUser(null);
+  }
+
+  return (
+    <div>
+      <h2>JWT Auth Provider</h2>
+
+      {authenticated ? (
+        <>
+          <p>User: {user?.username}</p>
+          <p>Authenticated: Yes</p>
+          <button onClick={handleLogout} className="btn-red">Logout</button>
+        </>
+      ) : (
+        <form onSubmit={handleLogin}>
+          <input
+            value={loginData.username}
+            onChange={e => setLoginData({ ...loginData, username: e.target.value })}
+          />
+          <input
+            type="password"
+            value={loginData.password}
+            onChange={e => setLoginData({ ...loginData, password: e.target.value })}
+          />
+          <button type="submit" className="btn-primary">Demo Login</button>
+        </form>
+      )}
+    </div>
+  );
+}
+/* ────────────────────────────────────────────────────────────────────── */
+
+/* ─── client/src/hooks/use-jwt-auth.tsx  (load token from storage) ──── */
+import { jwtToken, setJwtTokenForAuth } from '@/lib/jwtTokenStorage';
+
+// … inside JwtAuthProvider useEffect:
+useEffect(() => {
+  async function loadUser() {
+    if (!jwtToken) return;                       // skip if nothing stored
+    try {
+      const res = await apiRequest('GET', '/api/jwt/me');
+      const { user } = await res.json();
+      setUser(user);
+      setAuthenticated(true);
+    } catch {
+      setJwtTokenForAuth(null);                  // token invalid → purge
+    }
+  }
+  loadUser();
+}, []);
+/* ────────────────────────────────────────────────────────────────────── */

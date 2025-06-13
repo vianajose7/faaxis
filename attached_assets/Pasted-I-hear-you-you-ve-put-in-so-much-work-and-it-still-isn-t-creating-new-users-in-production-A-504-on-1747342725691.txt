@@ -1,0 +1,102 @@
+I hear you—you’ve put in so much work and it still isn’t creating new users in production.  A 504 on /jwt/register almost always means the API never picked up or answered that route, so your front-end proxy just sat there waiting until the load balancer gave up.
+
+Let’s rip out all the “fork a second process,” “test servers,” “monkey-patch port 5000,” etc., and do it the right way:
+
+⸻
+
+1) Consolidate into a single Express server
+
+Instead of spawning or proxying to a separate API process, just build your API and your SPA into one bundle and mount them on the same app.  That way you never have to proxy /jwt/* or worry about port conflicts or forks.
+
+server/index.ts
+
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { registerRoutes } from './routes';    // <-- your existing routes.ts
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const PORT = Number(process.env.PORT || 3000);
+
+async function main() {
+  const app = express();
+
+  // Health check
+  app.get('/health', (_req, res) => res.sendStatus(200));
+
+  // Mount all API routes (including /jwt/register, /api/…)
+  await registerRoutes(app);
+
+  // Serve your built React app
+  const publicDir = path.join(__dirname, '../dist/public');
+  app.use(express.static(publicDir));
+
+  // SPA fallback — send index.html for everything *except* API or JWT
+  app.get(/^\/(?!(api|jwt)\/).*/, (_req, res) => {
+    res.sendFile(path.join(publicDir, 'index.html'));
+  });
+
+  app.listen(PORT, () => {
+    console.log(`✅ Listening on port ${PORT}`);
+  });
+}
+
+main().catch(err => {
+  console.error('🔥 Failed to start:', err);
+  process.exit(1);
+});
+
+Make sure server/routes.ts already exports your async function registerRoutes(app: Express).
+
+⸻
+
+2) Build & Run Scripts
+
+In your package.json:
+
+{
+  "type": "module",
+  "scripts": {
+    "build": "vite build && esbuild server/index.ts --bundle --platform=node --format=esm --outdir=dist",
+    "start": "node dist/index.js"
+  }
+}
+
+Then your deploy commands become trivially:
+
+# Build step (CI or Replit build command)
+npm ci
+npm run build
+
+# Run step (heroku/replit/google-cloud-run run command)
+npm start
+
+No chmods, no forks, no proxy tinkering.
+
+⸻
+
+3) Environment Variables
+
+This is the most likely missing piece in your live environment.  Your /jwt/register route probably tries to write to the database (or sign a JWT) and hangs because it can’t connect:
+	•	DATABASE_URL (Postgres connection)
+	•	JWT_SECRET (your HMAC key)
+	•	any other process.env.* your server code expects
+
+Make absolutely sure that in your Replit/Cloud Run/Heroku settings you have all of those set.  Once the server can connect to the database and has a JWT secret, /jwt/register will return 200 (and create the user).
+
+⸻
+
+TL;DR
+	1.	Unify your API and SPA in a single dist/index.js bundle, no forking or multi-process proxy.
+	2.	Expose all your routes via one Express instance.
+	3.	Set DATABASE_URL, JWT_SECRET, etc in your production env.
+	4.	Use:
+
+npm ci && npm run build
+npm start
+
+as your build & run commands.
+
+That will immediately restore your registration endpoint (no more 504s), because the server will be listening on the same port for both /jwt/register and your static files.
+
+Let me know if you’d like me to walk you through adding any missing env-vars or double-checking your registerRoutes export!

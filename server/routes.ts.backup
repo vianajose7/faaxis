@@ -1,0 +1,1583 @@
+import type { Express, Request, Response, NextFunction } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { setupAuth, hashPassword } from "./auth";
+import Stripe from "stripe";
+
+// Import Airtable service
+import { getFirmDeals, getFirmParameters, getFirmProfiles, invalidateCache } from './airtable-service';
+import { listAirtableTables, testReadTable } from './debug-airtable';
+// Import OpenAI service
+import { enhanceProfile, generateBlogContent, generateCompanyData } from './openai-service';
+// Import Blog Generator
+import { generateBlog } from './blog-generator';
+// Import Email service
+import { 
+  sendListingApprovalNotification, 
+  sendMarketplaceUpdatesNotification,
+  sendVerificationEmail
+} from './email-service';
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication routes
+  setupAuth(app);
+  
+  // Create admin user if not exists and proper env vars are set
+  try {
+    // Get admin credentials from environment variables
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    // Only create admin user if environment variables are properly set
+    if (adminEmail && adminPassword) {
+      let adminUser = await storage.getUserByUsername(adminEmail);
+      if (!adminUser) {
+        // Use the imported hashPassword function
+        const hashedPassword = await hashPassword(adminPassword);
+        
+        // Create user with required fields from environment
+        adminUser = await storage.createUser({
+          username: adminEmail,
+          password: hashedPassword
+        });
+        
+        // Set email as verified for admin
+        await storage.updateUserVerification(adminUser.id, {
+          emailVerified: true
+        });
+        
+        // Set admin privileges
+        if (adminUser && !adminUser.isAdmin) {
+          await storage.updateUser(adminUser.id, { isAdmin: true });
+        }
+        
+        console.log("Created admin user from environment variables");
+      }
+    } else {
+      console.log("No admin credentials found in environment variables");
+      
+      // Admin creation should only happen through the proper admin creation API endpoints
+      // in a production environment with proper verification
+    }
+  } catch (error) {
+    console.error("Error creating admin user:", error);
+  }
+  
+  // Middleware to check if user is authenticated
+  const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Unauthorized - Please log in" });
+    }
+    next();
+  };
+  
+  // Middleware to check if user is admin
+  const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Unauthorized - Please log in" });
+    }
+    
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ error: "Forbidden - Admin access required" });
+    }
+    
+    next();
+  };
+  
+  // Direct email verification route that will redirect to the frontend verify page
+  // This handles the case when users click the link in their email
+  app.get("/verify-email", async (req, res) => {
+    try {
+      const token = req.query.token as string;
+      
+      // If it's a frontend route without a token, let the frontend handle it
+      if (!token) {
+        return res.sendFile('index.html', { root: './dist' });
+      }
+      
+      // Find user with the token
+      const user = await storage.getUserByVerificationToken(token);
+      if (!user) {
+        return res.redirect('/verify-email?error=Invalid+verification+token');
+      }
+      
+      // Check if token is expired
+      if (user.verificationTokenExpires) {
+        const expires = new Date(user.verificationTokenExpires);
+        if (expires < new Date()) {
+          return res.redirect('/verify-email?error=Verification+token+has+expired');
+        }
+      }
+      
+      // Update user as verified
+      await storage.updateUserVerification(user.id, {
+        emailVerified: true,
+        verificationToken: null,
+        verificationTokenExpires: null
+      });
+      
+      // Redirect to success page
+      res.redirect('/verify-email?success=true');
+    } catch (error) {
+      console.error("Verification error:", error);
+      res.redirect('/verify-email?error=Verification+failed');
+    }
+  });
+  
+  // Direct password reset route that validates the token and redirects to the frontend
+  app.get("/reset-password", async (req, res) => {
+    try {
+      const token = req.query.token as string;
+      
+      // If it's a frontend route without a token, let the frontend handle it
+      if (!token) {
+        return res.sendFile('index.html', { root: './dist' });
+      }
+      
+      // Find user with the token
+      const user = await storage.getUserByResetToken(token);
+      if (!user) {
+        return res.redirect('/reset-password?error=Invalid+reset+token');
+      }
+      
+      // Check if token is expired
+      if (user.resetPasswordExpires) {
+        const expires = new Date(user.resetPasswordExpires);
+        if (expires < new Date()) {
+          return res.redirect('/reset-password?error=Reset+token+has+expired');
+        }
+      }
+      
+      // Redirect to reset password page with valid token
+      res.redirect(`/reset-password?token=${token}&valid=true`);
+    } catch (error) {
+      console.error("Password reset token verification error:", error);
+      res.redirect('/reset-password?error=Verification+failed');
+    }
+  });
+  
+  // Debug endpoints for Airtable
+  app.get("/api/airtable-tables", async (_req, res) => {
+    try {
+      const tablesInfo = await listAirtableTables();
+      res.json(tablesInfo);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error listing Airtable tables: " + error.message 
+      });
+    }
+  });
+  
+  app.get("/api/test-airtable/:tableName", async (req, res) => {
+    try {
+      const { tableName } = req.params;
+      const result = await testReadTable(tableName);
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: `Error testing Airtable table ${req.params.tableName}: ${error.message}`
+      });
+    }
+  });
+  
+  // Airtable data endpoints
+  app.get("/api/firm-deals", async (_req, res) => {
+    try {
+      const deals = await getFirmDeals();
+      res.json(deals);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error fetching firm deals: " + error.message 
+      });
+    }
+  });
+  
+  app.get("/api/firm-parameters", async (_req, res) => {
+    try {
+      const params = await getFirmParameters();
+      res.json(params);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error fetching firm parameters: " + error.message 
+      });
+    }
+  });
+  
+  // Firm profiles endpoints
+  app.get("/api/firm-profiles", async (_req, res) => {
+    try {
+      const profiles = await getFirmProfiles();
+      res.json(profiles);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error fetching firm profiles: " + error.message 
+      });
+    }
+  });
+  
+  // Get a specific firm profile by name
+  app.get("/api/firm-profiles/:firmName", async (req, res) => {
+    try {
+      const { firmName } = req.params;
+      const profiles = await getFirmProfiles();
+      const profile = profiles.find(p => p.firm.toLowerCase() === firmName.toLowerCase());
+      
+      if (!profile) {
+        return res.status(404).json({ 
+          message: "Firm profile not found" 
+        });
+      }
+      
+      res.json(profile);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error fetching firm profile: " + error.message 
+      });
+    }
+  });
+  
+  // AI-enhanced firm profile
+  app.get("/api/firm-profiles/:firmName/enhanced", async (req, res) => {
+    try {
+      const { firmName } = req.params;
+      const profiles = await getFirmProfiles();
+      const profile = profiles.find(p => p.firm.toLowerCase() === firmName.toLowerCase());
+      
+      if (!profile) {
+        return res.status(404).json({ 
+          message: "Firm profile not found" 
+        });
+      }
+      
+      // Check if OpenAI API key is available
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(400).json({
+          message: "OpenAI API key not configured. Please set the OPENAI_API_KEY environment variable."
+        });
+      }
+      
+      try {
+        // Generate enhanced profile with AI data
+        const companyData = await generateCompanyData(profile.firm);
+        
+        // Return combined data
+        res.json({
+          ...profile,
+          ceo: profile.ceo || companyData.ceo,
+          bio: profile.bio || companyData.bio,
+          founded: profile.founded || companyData.founded,
+          headquarters: profile.headquarters || companyData.headquarters,
+          ai_generated: {
+            stockPrice: companyData.stockPrice,
+            lastClosePrice: companyData.lastClosePrice,
+            socialLinks: companyData.socialLinks,
+            headcount: companyData.headcount,
+            totalAUM: companyData.totalAUM,
+            creditRating: companyData.creditRating
+          }
+        });
+      } catch (aiError: any) {
+        console.error("AI enhancement error:", aiError);
+        // Return the original profile without AI enhancement
+        res.json({
+          ...profile,
+          ai_error: "Failed to generate AI-enhanced data. Using available profile data only."
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error fetching enhanced firm profile: " + error.message 
+      });
+    }
+  });
+  
+  // Generate blog content with AI
+  app.post("/api/generate-blog-content", isAdmin, async (req, res) => {
+    // This endpoint is protected by isAdmin middleware, so we know the user is authenticated and admin
+    try {
+      const { sourceUrl, prompt } = req.body;
+      
+      if (!sourceUrl) {
+        return res.status(400).json({
+          message: "Source URL is required"
+        });
+      }
+      
+      // Check if OpenAI API key is available
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(400).json({
+          message: "OpenAI API key not configured. Please set the OPENAI_API_KEY environment variable."
+        });
+      }
+      
+      // Generate blog content using the blog generator
+      const generatedContent = await generateBlog(
+        sourceUrl,
+        prompt || "Write a professional, informative article based on this source."
+      );
+      
+      res.json({
+        ...generatedContent,
+        generated_at: new Date().toISOString(),
+        source_url: sourceUrl
+      });
+    } catch (error: any) {
+      console.error("Blog generation error:", error);
+      res.status(500).json({ 
+        message: "Error generating blog content: " + error.message 
+      });
+    }
+  });
+  
+  app.post("/api/invalidate-airtable-cache", isAdmin, async (req, res) => {
+    try {
+      invalidateCache();
+      res.json({ message: "Cache invalidated successfully" });
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error invalidating cache: " + error.message 
+      });
+    }
+  });
+  
+  // Admin route for refreshing Airtable data
+  app.post("/api/refresh-airtable", isAdmin, async (req, res) => {
+    try {
+      // Invalidate cache to force fresh fetch from Airtable
+      invalidateCache();
+      
+      // Fetch fresh data
+      const deals = await getFirmDeals();
+      const parameters = await getFirmParameters();
+      const profiles = await getFirmProfiles();
+      
+      res.json({ 
+        success: true, 
+        message: "Airtable data refreshed successfully",
+        count: {
+          deals: deals.length,
+          parameters: parameters.length,
+          profiles: profiles.length
+        }
+      });
+    } catch (error: any) {
+      console.error("Error refreshing Airtable data:", error);
+      res.status(500).json({ 
+        message: "Error refreshing Airtable data: " + error.message 
+      });
+    }
+  });
+
+  // Admin Verification routes
+  app.post("/api/request-admin-verification", async (req, res) => {
+    try {
+      const { username } = req.body;
+      
+      if (!username) {
+        return res.status(400).json({ message: "Username is required" });
+      }
+      
+      // Get the user
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Check if user is admin
+      if (!user.isAdmin) {
+        return res.status(403).json({ message: "User is not an administrator" });
+      }
+      
+      // Generate verification code (6-digit code)
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Set expiration to 10 minutes from now
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+      
+      // Update user with verification code
+      await storage.updateUserAdminVerification(user.id, {
+        adminVerificationCode: verificationCode,
+        adminVerificationExpires: expiresAt
+      });
+      
+      // Send verification code via email
+      const { sendAdminVerificationCode } = await import('./email-service');
+      const emailSent = await sendAdminVerificationCode(user.username, verificationCode);
+      
+      if (!emailSent) {
+        return res.status(500).json({ message: "Failed to send verification code email" });
+      }
+      
+      res.status(200).json({ 
+        message: "Verification code sent to your email",
+        expiresAt
+      });
+    } catch (error: any) {
+      console.error("Admin verification request error:", error);
+      res.status(500).json({ message: "Error sending verification code: " + error.message });
+    }
+  });
+  
+  app.post("/api/verify-admin-code", async (req, res) => {
+    try {
+      const { username, code } = req.body;
+      
+      if (!username || !code) {
+        return res.status(400).json({ message: "Username and verification code are required" });
+      }
+      
+      // Get the user
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Check if user is admin
+      if (!user.isAdmin) {
+        return res.status(403).json({ message: "User is not an administrator" });
+      }
+      
+      // Verify the code
+      if (user.adminVerificationCode !== code) {
+        return res.status(400).json({ message: "Invalid verification code" });
+      }
+      
+      // Check if code is expired
+      if (user.adminVerificationExpires) {
+        const expires = new Date(user.adminVerificationExpires);
+        if (expires < new Date()) {
+          return res.status(400).json({ message: "Verification code has expired" });
+        }
+      }
+      
+      // Clear the verification code
+      await storage.updateUserAdminVerification(user.id, {
+        adminVerificationCode: null,
+        adminVerificationExpires: null
+      });
+      
+      // If user is already authenticated, we don't need to log them in again
+      if (req.isAuthenticated() && req.user.id === user.id) {
+        return res.status(200).json({ 
+          message: "Admin verification successful",
+          verified: true
+        });
+      }
+      
+      // Log the user in
+      req.login(user, (err) => {
+        if (err) {
+          return res.status(500).json({ message: "Login error: " + err.message });
+        }
+        
+        return res.status(200).json({ 
+          message: "Admin verification successful",
+          verified: true
+        });
+      });
+    } catch (error: any) {
+      console.error("Admin verification error:", error);
+      res.status(500).json({ message: "Error verifying admin code: " + error.message });
+    }
+  });
+  
+  // Admin User Management Routes
+  app.get("/api/admin/users", isAdmin, async (_req, res) => {
+    try {
+      // Get all users from storage
+      const users = Array.from(storage.getAllUsers().values());
+      
+      // Return users with sensitive information removed
+      const sanitizedUsers = users.map(user => {
+        // Type assertion to make TypeScript happy
+        const typedUser = user as Record<string, any>;
+        
+        // Create a sanitized user object without sensitive fields
+        const sanitizedUser: Record<string, any> = {};
+        Object.keys(typedUser).forEach(key => {
+          if (!['password', 'resetPasswordToken', 'resetPasswordExpires', 'verificationToken', 'verificationTokenExpires'].includes(key)) {
+            sanitizedUser[key] = typedUser[key];
+          }
+        });
+        
+        return sanitizedUser;
+      });
+      
+      res.json(sanitizedUsers);
+    } catch (error: any) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Error fetching users: " + error.message });
+    }
+  });
+  
+  app.post("/api/admin/users", isAdmin, async (req, res) => {
+    try {
+      const { username, password, fullName, isAdmin: isAdminUser, isPremium, emailVerified } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+      
+      // Hash the password
+      const hashedPassword = await hashPassword(password);
+      
+      // Create the user
+      const user = await storage.createUser({
+        username,
+        password: hashedPassword,
+      });
+      
+      // Update user with additional properties
+      if (fullName) {
+        await storage.updateUserProfile(user.id, { fullName });
+      }
+      
+      // Update verification status if provided
+      await storage.updateUserVerification(user.id, {
+        emailVerified: emailVerified || false,
+      });
+      
+      // Update admin and premium status manually since they're not in the updateUserProfile method
+      if (isAdminUser) {
+        (user as any).isAdmin = true;
+      }
+      
+      if (isPremium) {
+        await storage.updateUserPremiumStatus(user.id, true);
+      }
+      
+      // Return the created user without sensitive information
+      const { password: _, resetPasswordToken, resetPasswordExpires, verificationToken, verificationTokenExpires, ...sanitizedUser } = user;
+      
+      res.status(201).json(sanitizedUser);
+    } catch (error: any) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Error creating user: " + error.message });
+    }
+  });
+  
+  app.get("/api/admin/users/:id", isAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userId = parseInt(id, 10);
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      // Get the user
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Return user without sensitive information
+      const { password, resetPasswordToken, resetPasswordExpires, verificationToken, verificationTokenExpires, ...sanitizedUser } = user;
+      
+      res.json(sanitizedUser);
+    } catch (error: any) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Error fetching user: " + error.message });
+    }
+  });
+  
+  app.put("/api/admin/users/:id", isAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userId = parseInt(id, 10);
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      // Get the user
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const { fullName, isAdmin: isAdminUser, isPremium, emailVerified, password } = req.body;
+      
+      // Update profile information
+      if (fullName !== undefined) {
+        await storage.updateUserProfile(userId, { fullName });
+      }
+      
+      // Update verification status if provided
+      if (emailVerified !== undefined) {
+        await storage.updateUserVerification(userId, {
+          emailVerified,
+        });
+      }
+      
+      // Update premium status if provided
+      if (isPremium !== undefined) {
+        await storage.updateUserPremiumStatus(userId, isPremium);
+      }
+      
+      // Update admin status manually (not in storage methods)
+      if (isAdminUser !== undefined) {
+        (user as any).isAdmin = isAdminUser;
+      }
+      
+      // Update password if provided
+      if (password) {
+        const hashedPassword = await hashPassword(password);
+        await storage.updateUserPassword(userId, hashedPassword);
+      }
+      
+      // Get updated user
+      const updatedUser = await storage.getUser(userId);
+      
+      // Return updated user without sensitive information
+      const { password: _, resetPasswordToken, resetPasswordExpires, verificationToken, verificationTokenExpires, ...sanitizedUser } = updatedUser!;
+      
+      res.json(sanitizedUser);
+    } catch (error: any) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Error updating user: " + error.message });
+    }
+  });
+  
+  app.delete("/api/admin/users/:id", isAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userId = parseInt(id, 10);
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      // Prevent deletion of the requesting admin user
+      // We can safely use req.user here because the isAdmin middleware ensures req.user exists
+      if (req.user && req.user.id === userId) {
+        return res.status(400).json({ message: "Cannot delete yourself" });
+      }
+      
+      // Delete the user
+      await storage.deleteUser(userId);
+      
+      res.json({ message: "User deleted successfully" });
+    } catch (error: any) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Error deleting user: " + error.message });
+    }
+  });
+  
+  // Admin Blog Post Management Routes (stub API for frontend)
+  app.get("/api/admin/blog-posts", isAdmin, (_req, res) => {
+    // For now, return empty array or sample data
+    // This will be replaced with actual database access later
+    res.json([]);
+  });
+  
+  // Admin Practice Listings Management Routes (stub API for frontend)
+  app.get("/api/admin/practice-listings", isAdmin, (_req, res) => {
+    // For now, return empty array or sample data
+    // This will be replaced with actual database access later
+    res.json([]);
+  });
+  
+  // Stripe payment route
+  app.post("/api/create-payment-intent", async (req, res) => {
+    try {
+      // Check for Stripe Secret Key
+      const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+      if (!stripeSecretKey) {
+        console.error("Stripe Secret Key missing in environment");
+        return res.status(500).json({
+          message: "Payment service is currently unavailable. Please try again later or contact support."
+        });
+      }
+      
+      // Check if we're in test mode
+      const isTestMode = stripeSecretKey.startsWith('sk_test_');
+      if (!isTestMode) {
+        console.error("Stripe is not in test mode. For testing, use keys that start with sk_test_");
+        return res.status(500).json({
+          message: "Test payments can only be processed in test mode. Contact support for assistance."
+        });
+      }
+
+      // Initialize Stripe only when needed with explicit API version
+      const stripe = new Stripe(stripeSecretKey, {
+        apiVersion: '2025-03-31.basil', // Setting API version to match @types/stripe
+        typescript: true,
+      });
+
+      const { amount } = req.body;
+      
+      if (!amount || isNaN(amount) || amount <= 0) {
+        return res.status(400).json({
+          message: "Invalid payment amount provided"
+        });
+      }
+      
+      try {
+        // Create a payment intent with Stripe
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: Math.round(amount * 100), // Convert to cents
+          currency: "usd",
+          metadata: {
+            userId: req.user?.id?.toString() || 'anonymous',
+          },
+        });
+
+        // If user is authenticated, save payment info
+        if (req.isAuthenticated()) {
+          await storage.createPayment({
+            userId: req.user.id,
+            stripePaymentId: paymentIntent.id,
+            amount: amount,
+            status: paymentIntent.status,
+            createdAt: new Date().toISOString(),
+          });
+        }
+
+        res.json({ clientSecret: paymentIntent.client_secret });
+      } catch (stripeError: any) {
+        console.error("Stripe API error:", stripeError);
+        
+        // Handle specific Stripe errors
+        if (stripeError.type === 'StripeCardError') {
+          return res.status(400).json({ message: stripeError.message });
+        } else if (stripeError.type === 'StripeInvalidRequestError') {
+          return res.status(400).json({ message: "Invalid payment information. Please check your details and try again." });
+        } else if (stripeError.type === 'StripeAuthenticationError') {
+          console.error("Stripe authentication error - check API keys:", stripeError);
+          return res.status(500).json({ message: "Payment service authentication error. Please contact support." });
+        } else {
+          // Generic error for other Stripe issues
+          return res.status(500).json({ message: "Payment processing error. Please try again later." });
+        }
+      }
+    } catch (error: any) {
+      console.error("Unexpected payment processing error:", error);
+      res.status(500).json({ 
+        message: "An unexpected error occurred. Please try again or contact support." 
+      });
+    }
+  });
+
+  // Verify payment status
+  app.get("/api/verify-payment", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    try {
+      // Check if user has premium status
+      const user = await storage.getUser(req.user.id);
+      
+      if (user?.isPremium) {
+        // Get user's advisor profile if it exists
+        const profile = await storage.getAdvisorProfileByUserId(req.user.id);
+        
+        // Return initial values for the form if profile exists
+        const initialValues = profile ? {
+          aum: parseFloat(profile.aum),
+          revenue: parseFloat(profile.revenue),
+          feeBasedPercentage: parseFloat(profile.feeBasedPercentage),
+          city: profile.city,
+          state: profile.state
+        } : null;
+        
+        return res.json({ isPaid: true, initialValues });
+      }
+      
+      // Check if user has any successful payments
+      const payments = await storage.getPaymentsByUserId(req.user.id);
+      const hasSuccessfulPayment = payments.some(p => p.status === 'succeeded');
+      
+      if (hasSuccessfulPayment) {
+        // Update user to premium status
+        await storage.updateUserPremiumStatus(req.user.id, true);
+        
+        // Get the same initial values as above
+        const profile = await storage.getAdvisorProfileByUserId(req.user.id);
+        const initialValues = profile ? {
+          aum: parseFloat(profile.aum),
+          revenue: parseFloat(profile.revenue),
+          feeBasedPercentage: parseFloat(profile.feeBasedPercentage),
+          city: profile.city,
+          state: profile.state
+        } : null;
+        
+        return res.json({ isPaid: true, initialValues });
+      }
+      
+      // No successful payment found
+      res.json({ isPaid: false });
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error verifying payment: " + error.message 
+      });
+    }
+  });
+  
+  // Check Stripe configuration
+  app.get("/api/check-stripe-config", async (req, res) => {
+    // This endpoint checks if all required Stripe keys are available in the environment
+    // It does not expose the actual keys - just whether they are present or not
+    
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
+    const stripeWebhookKey = process.env.STRIPE_WEBHOOK_SECRET || '';
+    
+    const hasSecretKey = !!stripeSecretKey;
+    const hasWebhookKey = !!stripeWebhookKey;
+    
+    // Check if the secret key is in test mode
+    const isTestMode = stripeSecretKey.startsWith('sk_test_');
+    
+    // Only check that they exist, don't check the format or validity
+    res.json({
+      hasSecretKey,
+      hasWebhookKey,
+      isTestMode,
+      pubKeyFormatValid: true, // We can't check this on server as it's a client-side env var
+    });
+  });
+  
+  // Handle Stripe webhook events
+  app.post("/api/stripe-webhook", async (req, res) => {
+    console.log("Webhook request received");
+    const sig = req.headers['stripe-signature'] as string;
+    
+    // Debug header information
+    console.log("Stripe-Signature header:", sig ? "present" : "missing");
+    console.log("Content-Type:", req.headers['content-type']);
+    
+    if (!process.env.STRIPE_WEBHOOK_SECRET) {
+      console.error("Stripe webhook secret missing in environment");
+      return res.status(500).json({
+        message: "Webhook configuration error. Please contact support."
+      });
+    }
+    
+    try {
+      // Check if req.body is a buffer as expected for verification
+      console.log("Request body type:", typeof req.body);
+      console.log("Is Buffer:", Buffer.isBuffer(req.body));
+      
+      // Initialize Stripe with the secret key and explicit API version
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+        apiVersion: '2025-03-31.basil', // Setting API version to match @types/stripe
+        typescript: true,
+      });
+      
+      // Parse the webhook event
+      let event;
+      
+      // For the webhook, req.body is the raw request body buffer
+      try {
+        event = stripe.webhooks.constructEvent(
+          req.body,
+          sig,
+          process.env.STRIPE_WEBHOOK_SECRET
+        );
+        console.log("Successfully verified Stripe webhook signature");
+        console.log("Event type:", event.type);
+      } catch (err: any) {
+        console.error(`Webhook signature verification failed: ${err.message}`);
+        if (err.message.includes('No signature')) {
+          console.error("Missing stripe-signature header");
+        } else if (err.message.includes('timestamp')) {
+          console.error("Timestamp verification failed");
+        } else if (err.message.includes('scheme')) {
+          console.error("Signature scheme not v1");
+        }
+        return res.status(400).json({ message: "Webhook signature verification failed" });
+      }
+      
+      // Handle payment intent events
+      if (event.type === 'payment_intent.succeeded') {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        console.log(`PaymentIntent ${paymentIntent.id} succeeded`);
+        
+        // Extract userId from metadata
+        const userId = parseInt(paymentIntent.metadata.userId);
+        
+        if (!isNaN(userId)) {
+          // Find payment in our database
+          const payments = await storage.getPaymentsByUserId(userId);
+          const payment = payments.find(p => p.stripePaymentId === paymentIntent.id);
+          
+          if (payment) {
+            // Update payment status
+            await storage.updatePaymentStatus(payment.id, 'succeeded');
+            
+            // Update user to premium
+            await storage.updateUserPremiumStatus(userId, true);
+          } else {
+            // Create a new payment record if it doesn't exist
+            await storage.createPayment({
+              userId: userId,
+              stripePaymentId: paymentIntent.id,
+              amount: paymentIntent.amount / 100, // Convert from cents
+              status: 'succeeded',
+              createdAt: new Date().toISOString(),
+            });
+            
+            // Update user to premium
+            await storage.updateUserPremiumStatus(userId, true);
+          }
+        }
+      } else if (event.type === 'payment_intent.payment_failed') {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        console.log(`PaymentIntent ${paymentIntent.id} failed`);
+        
+        // Extract userId from metadata
+        const userId = parseInt(paymentIntent.metadata.userId);
+        
+        if (!isNaN(userId)) {
+          // Find payment in our database
+          const payments = await storage.getPaymentsByUserId(userId);
+          const payment = payments.find(p => p.stripePaymentId === paymentIntent.id);
+          
+          if (payment) {
+            // Update payment status
+            await storage.updatePaymentStatus(payment.id, 'failed');
+          }
+        }
+      }
+      
+      // Return a 200 response to acknowledge receipt of the event
+      res.json({ received: true });
+    } catch (error: any) {
+      console.error("Error handling webhook:", error);
+      res.status(500).json({
+        message: "Error handling webhook event: " + error.message
+      });
+    }
+  });
+
+  // Save advisor profile
+  app.post("/api/advisor-profile", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    try {
+      // Check if profile already exists for user
+      const existingProfile = await storage.getAdvisorProfileByUserId(req.user.id);
+      
+      if (existingProfile) {
+        // Update existing profile
+        const updatedProfile = await storage.updateAdvisorProfile(existingProfile.id, {
+          ...req.body,
+          userId: req.user.id,
+        });
+        return res.json(updatedProfile);
+      }
+      
+      // Create new profile
+      const newProfile = await storage.createAdvisorProfile({
+        ...req.body,
+        userId: req.user.id,
+      });
+      
+      res.status(201).json(newProfile);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error saving advisor profile: " + error.message 
+      });
+    }
+  });
+
+  // Save calculation
+  app.post("/api/saved-calculations", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    try {
+      // Get user's advisor profile or create one if it doesn't exist
+      let profile = await storage.getAdvisorProfileByUserId(req.user.id);
+      
+      if (!profile) {
+        profile = await storage.createAdvisorProfile({
+          userId: req.user.id,
+          aum: req.body.aum || "0",
+          revenue: req.body.revenue || "0",
+          feeBasedPercentage: req.body.feeBasedPercentage || "0",
+          city: req.body.city || "",
+          state: req.body.state || "",
+        });
+      }
+      
+      // Create saved calculation
+      const savedCalculation = await storage.createSavedCalculation({
+        userId: req.user.id,
+        profileId: profile.id,
+        calculationData: JSON.stringify(req.body.calculationData),
+        createdAt: new Date().toISOString(),
+        name: req.body.name || "Calculation " + new Date().toLocaleDateString(),
+      });
+      
+      res.status(201).json(savedCalculation);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error saving calculation: " + error.message 
+      });
+    }
+  });
+
+  // Get saved calculations
+  app.get("/api/saved-calculations", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    try {
+      const savedCalculations = await storage.getSavedCalculationsByUserId(req.user.id);
+      res.json(savedCalculations);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error fetching saved calculations: " + error.message 
+      });
+    }
+  });
+
+  // Delete saved calculation
+  app.delete("/api/saved-calculations/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    try {
+      const calculationId = parseInt(req.params.id);
+      const calculation = await storage.getSavedCalculation(calculationId);
+      
+      // Check if calculation exists and belongs to the user
+      if (!calculation) {
+        return res.status(404).json({ message: "Calculation not found" });
+      }
+      
+      if (calculation.userId !== req.user.id) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      await storage.deleteSavedCalculation(calculationId);
+      res.status(204).send();
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error deleting saved calculation: " + error.message 
+      });
+    }
+  });
+  
+  // User profile update route
+  app.post("/api/update-profile", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    try {
+      const { fullName, phone, city, state, firm, aum, revenue, feeBasedPercentage } = req.body;
+      
+      const updatedUser = await storage.updateUserProfile(req.user.id, {
+        fullName,
+        phone,
+        city,
+        state,
+        firm,
+        aum,
+        revenue,
+        feeBasedPercentage
+      });
+      
+      res.json(updatedUser);
+    } catch (error: any) {
+      console.error("Error updating user profile:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+  
+  // Blog content generation API
+  // Code removed to fix duplicate route - this endpoint is already defined earlier in the file
+
+  // Marketplace listing API endpoints
+  // Get all marketplace listings
+  app.get("/api/marketplace-listings", async (req, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const listings = await storage.getAllMarketplaceListings(status);
+      res.json(listings);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error fetching marketplace listings: " + error.message 
+      });
+    }
+  });
+  
+  // Get marketplace listing by id
+  app.get("/api/marketplace-listings/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid listing ID" });
+      }
+      
+      const listing = await storage.getMarketplaceListing(id);
+      if (!listing) {
+        return res.status(404).json({ message: "Listing not found" });
+      }
+      
+      res.json(listing);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error fetching marketplace listing: " + error.message 
+      });
+    }
+  });
+  
+  // Get user's marketplace listings
+  app.get("/api/user/marketplace-listings", isAuthenticated, async (req, res) => {
+    try {
+      const listings = await storage.getMarketplaceListingsByUserId(req.user.id);
+      res.json(listings);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error fetching user's marketplace listings: " + error.message 
+      });
+    }
+  });
+  
+  // Create new marketplace listing
+  app.post("/api/marketplace-listings", isAuthenticated, async (req, res) => {
+    try {
+      const now = new Date().toISOString();
+      
+      const newListing = await storage.createMarketplaceListing({
+        ...req.body,
+        userId: req.user.id,
+        createdAt: now
+      });
+      
+      res.status(201).json(newListing);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error creating marketplace listing: " + error.message 
+      });
+    }
+  });
+  
+  // Update marketplace listing
+  app.put("/api/marketplace-listings/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid listing ID" });
+      }
+      
+      // Get the listing to check ownership
+      const listing = await storage.getMarketplaceListing(id);
+      if (!listing) {
+        return res.status(404).json({ message: "Listing not found" });
+      }
+      
+      // Check if user owns this listing or is admin
+      if (listing.userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "You don't have permission to update this listing" });
+      }
+      
+      // Update the listing
+      const updatedListing = await storage.updateMarketplaceListing(id, req.body);
+      res.json(updatedListing);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error updating marketplace listing: " + error.message 
+      });
+    }
+  });
+  
+  // Admin route to approve or reject marketplace listing
+  app.put("/api/marketplace-listings/:id/status", isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid listing ID" });
+      }
+      
+      const { status } = req.body;
+      if (!status || !['Pending', 'Active', 'Rejected', 'Sold'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      
+      // Get the listing
+      const listing = await storage.getMarketplaceListing(id);
+      if (!listing) {
+        return res.status(404).json({ message: "Listing not found" });
+      }
+      
+      // Update the listing status
+      const updatedListing = await storage.updateMarketplaceListingStatus(id, status);
+      
+      // If the listing is being approved, send notification to owner
+      if (status === 'Active' && listing.status !== 'Active') {
+        // Get the owner
+        const owner = await storage.getUser(listing.userId);
+        if (owner && owner.notifyApprovedListings) {
+          // Send approval notification
+          await sendListingApprovalNotification(
+            owner.username, // Using username as email
+            listing.title,
+            listing.id
+          );
+        }
+        
+        // Notify users who want updates about new listings
+        const interestedUsers = await storage.getUsersWithNotificationPreference('notifyNewListings');
+        const simpleListing = {
+          id: listing.id,
+          title: listing.title,
+          location: listing.location
+        };
+        
+        // Send notifications to interested users (not including the owner)
+        for (const user of interestedUsers) {
+          if (user.id !== listing.userId) {
+            await sendMarketplaceUpdatesNotification(user.username, [simpleListing]);
+          }
+        }
+      }
+      
+      res.json(updatedListing);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error updating marketplace listing status: " + error.message 
+      });
+    }
+  });
+  
+  // Delete marketplace listing
+  app.delete("/api/marketplace-listings/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid listing ID" });
+      }
+      
+      // Get the listing to check ownership
+      const listing = await storage.getMarketplaceListing(id);
+      if (!listing) {
+        return res.status(404).json({ message: "Listing not found" });
+      }
+      
+      // Check if user owns this listing or is admin
+      if (listing.userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "You don't have permission to delete this listing" });
+      }
+      
+      // Delete the listing
+      await storage.deleteMarketplaceListing(id);
+      res.status(204).end();
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error deleting marketplace listing: " + error.message 
+      });
+    }
+  });
+  
+  // Interest submission API
+  // Submit interest in a listing
+  app.post("/api/marketplace-listings/:id/interest", isAuthenticated, async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      if (isNaN(listingId)) {
+        return res.status(400).json({ message: "Invalid listing ID" });
+      }
+      
+      // Get the listing to ensure it exists
+      const listing = await storage.getMarketplaceListing(listingId);
+      if (!listing) {
+        return res.status(404).json({ message: "Listing not found" });
+      }
+      
+      // Create interest submission
+      const now = new Date().toISOString();
+      const submission = await storage.createInterestSubmission({
+        ...req.body,
+        userId: req.user.id,
+        listingId,
+        createdAt: now
+      });
+      
+      res.status(201).json(submission);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error submitting interest: " + error.message 
+      });
+    }
+  });
+  
+  // Get interest submissions for a listing (owner or admin only)
+  app.get("/api/marketplace-listings/:id/interest", isAuthenticated, async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      if (isNaN(listingId)) {
+        return res.status(400).json({ message: "Invalid listing ID" });
+      }
+      
+      // Get the listing
+      const listing = await storage.getMarketplaceListing(listingId);
+      if (!listing) {
+        return res.status(404).json({ message: "Listing not found" });
+      }
+      
+      // Check if user owns this listing or is admin
+      if (listing.userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "You don't have permission to view these submissions" });
+      }
+      
+      // Get interest submissions
+      const submissions = await storage.getInterestSubmissionsByListingId(listingId);
+      res.json(submissions);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error fetching interest submissions: " + error.message 
+      });
+    }
+  });
+  
+  // Update interest submission status (owner or admin only)
+  app.put("/api/interest/:id/status", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid submission ID" });
+      }
+      
+      const { status } = req.body;
+      if (!status || !['New', 'Contacted', 'Interested', 'Not Interested'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      
+      // Get the submission
+      const submission = await storage.getInterestSubmission(id);
+      if (!submission) {
+        return res.status(404).json({ message: "Submission not found" });
+      }
+      
+      // Get the listing to check ownership
+      const listing = await storage.getMarketplaceListing(submission.listingId);
+      if (!listing) {
+        return res.status(404).json({ message: "Associated listing not found" });
+      }
+      
+      // Check if user owns the listing or is admin
+      if (listing.userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "You don't have permission to update this submission" });
+      }
+      
+      // Update the submission status
+      const updatedSubmission = await storage.updateInterestSubmissionStatus(id, status);
+      res.json(updatedSubmission);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error updating interest submission status: " + error.message 
+      });
+    }
+  });
+  
+  // User notification preferences
+  app.put("/api/user/notification-preferences", isAuthenticated, async (req, res) => {
+    try {
+      const { notifyNewListings, notifyMarketUpdates, notifyApprovedListings } = req.body;
+      
+      // Only update provided preferences
+      const preferences: any = {};
+      if (notifyNewListings !== undefined) preferences.notifyNewListings = notifyNewListings;
+      if (notifyMarketUpdates !== undefined) preferences.notifyMarketUpdates = notifyMarketUpdates;
+      if (notifyApprovedListings !== undefined) preferences.notifyApprovedListings = notifyApprovedListings;
+      
+      // Update the user's notification preferences
+      const updatedUser = await storage.updateUserNotificationPreferences(req.user.id, preferences);
+      
+      // Remove sensitive data before responding
+      const { password, resetPasswordToken, resetPasswordExpires, verificationToken, verificationTokenExpires, ...safeUser } = updatedUser;
+      
+      res.json(safeUser);
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error updating notification preferences: " + error.message 
+      });
+    }
+  });
+
+  // Development utilities - safer alternative to previous backdoor
+  app.get("/api/dev-utils", (req, res) => {
+    // Only available in development mode
+    if (process.env.NODE_ENV !== 'development') {
+      return res.status(404).json({ 
+        message: "Not found - Development utilities are not available in production"
+      });
+    }
+    
+    // Return development environment info
+    res.json({
+      environment: process.env.NODE_ENV,
+      message: "This endpoint provides development information only",
+      authRoutes: [
+        "/api/login - Standard login with username/password",
+        "/api/register - Create a new user account",
+        "/api/user - Get current user information"
+      ],
+      adminLoginInfo: "Use admin@faaxis.com (see server logs for the generated password)",
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  // Handle job applications
+  app.post("/api/applications", async (req, res) => {
+    try {
+      // Check for honeypot field
+      if (req.body.honeypot) {
+        // Silently reject bot submissions
+        return res.status(200).json({ success: true });
+      }
+      
+      const { name, email, phone, position, coverLetter, resumeUrl } = req.body;
+      
+      // Basic validation
+      if (!name || !email || !position) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Construct email content
+      const emailContent = `
+        <h2>New Job Application</h2>
+        <p><strong>Position:</strong> ${position}</p>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+        ${coverLetter ? `<p><strong>Cover Letter:</strong><br>${coverLetter.replace(/\n/g, '<br>')}</p>` : ''}
+        ${resumeUrl ? `<p><strong>Resume:</strong> Uploaded</p>` : '<p><strong>Resume:</strong> Not uploaded</p>'}
+        <p><em>This application was submitted on ${new Date().toLocaleString()}</em></p>
+      `;
+      
+      // Send email notification
+      await sendVerificationEmail("hello@faaxis.com", emailContent);
+      
+      // Store application in database (in a real implementation)
+      // await storage.createApplication({ name, email, phone, position, coverLetter, resumeUrl });
+      
+      res.status(200).json({ 
+        success: true,
+        message: "Application submitted successfully" 
+      });
+    } catch (error: any) {
+      console.error("Application submission error:", error);
+      res.status(500).json({ 
+        message: "Error submitting application: " + error.message 
+      });
+    }
+  });
+  
+  // Handle feedback submissions
+  app.post("/api/feedback", async (req, res) => {
+    try {
+      // Check for honeypot field
+      if (req.body.honeypot) {
+        // Silently reject bot submissions
+        return res.status(200).json({ success: true });
+      }
+      
+      const { 
+        name, 
+        email, 
+        feedbackType, 
+        area, 
+        severity, 
+        feedback, 
+        screenshot 
+      } = req.body;
+      
+      // Basic validation
+      if (!name || !email || !feedbackType || !area || !feedback) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Construct email content
+      const emailContent = `
+        <h2>New Feedback Submission</h2>
+        <p><strong>Type:</strong> ${feedbackType}</p>
+        <p><strong>Area:</strong> ${area}</p>
+        ${severity ? `<p><strong>Severity:</strong> ${severity}</p>` : ''}
+        <p><strong>From:</strong> ${name} (${email})</p>
+        <p><strong>Feedback:</strong><br>${feedback.replace(/\n/g, '<br>')}</p>
+        ${screenshot ? `<p><strong>Screenshot:</strong> Included</p>` : ''}
+        <p><em>This feedback was submitted on ${new Date().toLocaleString()}</em></p>
+      `;
+      
+      // Send email notification
+      await sendVerificationEmail("hello@faaxis.com", emailContent);
+      
+      // Store feedback in database (in a real implementation)
+      // await storage.createFeedback({ 
+      //   name, email, feedbackType, area, severity, feedback, screenshot,
+      //   userId: req.user?.id, // Associate with user if authenticated
+      //   createdAt: new Date().toISOString()
+      // });
+      
+      res.status(200).json({ 
+        success: true,
+        message: "Feedback submitted successfully" 
+      });
+    } catch (error: any) {
+      console.error("Feedback submission error:", error);
+      res.status(500).json({ 
+        message: "Error submitting feedback: " + error.message 
+      });
+    }
+  });
+
+  // News API endpoints
+  app.get("/api/news", async (_req, res) => {
+    try {
+      // Import the news generator
+      const { getNewsArticles } = await import('./news-generator');
+      const newsData = await getNewsArticles();
+      res.json(newsData);
+    } catch (error: any) {
+      console.error("Error fetching news articles:", error);
+      res.status(500).json({ 
+        message: "Error fetching news articles: " + error.message 
+      });
+    }
+  });
+  
+  // Get a single news article by ID
+  app.get("/api/news/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Import the news generator
+      const { getNewsArticles } = await import('./news-generator');
+      const newsData = await getNewsArticles();
+      
+      // Find the article with the matching ID
+      const article = newsData.newsArticles.find(article => article.id === id);
+      
+      if (!article) {
+        return res.status(404).json({ message: "Article not found" });
+      }
+      
+      res.json(article);
+    } catch (error: any) {
+      console.error(`Error fetching news article ${req.params.id}:`, error);
+      res.status(500).json({ 
+        message: `Error fetching news article: ${error.message}` 
+      });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}

@@ -1,0 +1,24 @@
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async getUserByUsername (/home/runner/workspace/production-server.cjs:41:20)
+    at async /home/runner/workspace/production-server.cjs:118:26
+[PRODUCTION] Error creating user: Error: All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+    at /home/runner/workspace/node_modules/@neondatabase/serverless/index.js:1345:74
+    at async createUser (/home/runner/workspace/production-server.cjs:52:20)
+    at async /home/runner/workspace/production-server.cjs:125:18
+[PRODUCTION] Registration error: Error: All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+    at /home/runner/workspace/node_modules/@neondatabase/serverless/index.js:1345:74
+    at async createUser (/home/runner/workspace/production-server.cjs:52:20)
+    at async /home/runner/workspace/production-server.cjs:125:18
+[PRODUCTION] Error getting user: Error: All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+    at /home/runner/workspace/node_modules/@neondatabase/serverless/index.js:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async getUserByUsername (/home/runner/workspace/production-server.cjs:41:20)
+    at async /home/runner/workspace/production-server.cjs:118:26
+[PRODUCTION] Error creating user: Error: All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+    at /home/runner/workspace/node_modules/@neondatabase/serverless/index.js:1345:74
+    at async createUser (/home/runner/workspace/production-server.cjs:52:20)
+    at async /home/runner/workspace/production-server.cjs:125:18
+[PRODUCTION] Registration error: Error: All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+    at /home/runner/workspace/node_modules/@neondatabase/serverless/index.js:1345:74
+    at async createUser (/home/runner/workspace/production-server.cjs:52:20)
+    at async /home/runner/workspace/production-server.cjs:125:18

@@ -1,0 +1,38 @@
+Error verifying token: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data index-D-qBV-On.js:324:63130
+Protected route for /dashboard, auth status: 
+Object { isAuthenticated: true, isLoading: false }
+index-D-qBV-On.js:387:41960
+Auth successful, rendering protected component for: /dashboard index-D-qBV-On.js:387:42286
+Protected route for /dashboard, auth status: 
+Object { isAuthenticated: true, isLoading: false }
+index-D-qBV-On.js:387:41960
+Auth successful, rendering protected component for: /dashboard index-D-qBV-On.js:387:42286
+Protected route for /dashboard, auth status: 
+Object { isAuthenticated: true, isLoading: false }
+index-D-qBV-On.js:387:41960
+Auth successful, rendering protected component for: /dashboard index-D-qBV-On.js:387:42286
+Protected route for /dashboard, auth status: 
+Object { isAuthenticated: true, isLoading: false }
+index-D-qBV-On.js:387:41960
+Auth successful, rendering protected component for: /dashboard index-D-qBV-On.js:387:42286
+Protected route for /dashboard, auth status: 
+Object { isAuthenticated: true, isLoading: false }
+index-D-qBV-On.js:387:41960
+Auth successful, rendering protected component for: /dashboard index-D-qBV-On.js:387:42286
+Error: useAuth must be used within an AuthProvider
+    oA https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/assets/index-D-qBV-On.js:368
+    bs https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/assets/dashboard-page-CbyTr3lB.js:31
+    Px https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/assets/index-D-qBV-On.js:39
+    wg https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/assets/index-D-qBV-On.js:41
+    Bk https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/assets/index-D-qBV-On.js:41
+    Fk https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/assets/index-D-qBV-On.js:41
+    q4 https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/assets/index-D-qBV-On.js:41
+    Qf https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/assets/index-D-qBV-On.js:41
+    Og https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/assets/index-D-qBV-On.js:41
+    Dk https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/assets/index-D-qBV-On.js:41
+    j https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/assets/index-D-qBV-On.js:26
+    C https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/assets/index-D-qBV-On.js:26
+    EventHandlerNonNull* https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/assets/index-D-qBV-On.js:26
+    <anonymous> https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/assets/index-D-qBV-On.js:26
+index-D-qBV-On.js:41:161
+Uncaught Error: useAuth must be used within an AuthPro

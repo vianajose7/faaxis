@@ -1,0 +1,140 @@
+Failed to load resource: the server responded with a status of 404 ()Understand this error
+index-BEOc6HW1.js:238 
+            
+            
+           GET https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/api/firm-profiles?_t=1748283636021 404 (Not Found)
+(anonymous) @ index-BEOc6HW1.js:238
+i @ index-BEOc6HW1.js:238
+x @ index-BEOc6HW1.js:238
+start @ index-BEOc6HW1.js:238
+fetch @ index-BEOc6HW1.js:238
+ya @ index-BEOc6HW1.js:238
+onSubscribe @ index-BEOc6HW1.js:238
+subscribe @ index-BEOc6HW1.js:238
+(anonymous) @ index-BEOc6HW1.js:238
+u1 @ index-BEOc6HW1.js:39
+xd @ index-BEOc6HW1.js:41
+eo @ index-BEOc6HW1.js:41
+Jy @ index-BEOc6HW1.js:41
+Rs @ index-BEOc6HW1.js:39
+VN @ index-BEOc6HW1.js:41
+Fs @ index-BEOc6HW1.js:41
+U1 @ index-BEOc6HW1.js:41
+S @ index-BEOc6HW1.js:26
+O @ index-BEOc6HW1.js:26Understand this error
+index-BEOc6HW1.js:18 API error (404): {"error":"API endpoint not found"}
+console.error @ index-BEOc6HW1.js:18
+(anonymous) @ index-BEOc6HW1.js:238
+await in (anonymous)
+i @ index-BEOc6HW1.js:238
+x @ index-BEOc6HW1.js:238
+start @ index-BEOc6HW1.js:238
+fetch @ index-BEOc6HW1.js:238
+ya @ index-BEOc6HW1.js:238
+onSubscribe @ index-BEOc6HW1.js:238
+subscribe @ index-BEOc6HW1.js:238
+(anonymous) @ index-BEOc6HW1.js:238
+u1 @ index-BEOc6HW1.js:39
+xd @ index-BEOc6HW1.js:41
+eo @ index-BEOc6HW1.js:41
+Jy @ index-BEOc6HW1.js:41
+Rs @ index-BEOc6HW1.js:39
+VN @ index-BEOc6HW1.js:41
+Fs @ index-BEOc6HW1.js:41
+U1 @ index-BEOc6HW1.js:41
+S @ index-BEOc6HW1.js:26
+O @ index-BEOc6HW1.js:26Understand this error
+index-BEOc6HW1.js:18 Query error: Error: API error: 404 {"error":"API endpoint not found"}
+    at index-BEOc6HW1.js:238:47326
+console.error @ index-BEOc6HW1.js:18
+(anonymous) @ index-BEOc6HW1.js:238
+await in (anonymous)
+i @ index-BEOc6HW1.js:238
+x @ index-BEOc6HW1.js:238
+start @ index-BEOc6HW1.js:238
+fetch @ index-BEOc6HW1.js:238
+ya @ index-BEOc6HW1.js:238
+onSubscribe @ index-BEOc6HW1.js:238
+subscribe @ index-BEOc6HW1.js:238
+(anonymous) @ index-BEOc6HW1.js:238
+u1 @ index-BEOc6HW1.js:39
+xd @ index-BEOc6HW1.js:41
+eo @ index-BEOc6HW1.js:41
+Jy @ index-BEOc6HW1.js:41
+Rs @ index-BEOc6HW1.js:39
+VN @ index-BEOc6HW1.js:41
+Fs @ index-BEOc6HW1.js:41
+U1 @ index-BEOc6HW1.js:41
+S @ index-BEOc6HW1.js:26
+O @ index-BEOc6HW1.js:26Understand this error
+app.js?id=7e0a33316dfbe92a13df1c0dcf26f827:2 
+IFRAME-RESIZER
+
+Iframe-Resizer 5 is now available via the following two packages:
+
+ * @iframe-resizer/parent
+ * @iframe-resizer/child
+
+Additionally their are also new versions of iframe-resizer for React, Vue, and jQuery.
+
+Version 5 of iframe-resizer has been extensively rewritten to use modern browser APIs, which has enabled significantly better performance and greater accuracy in the detection of content resizing events.
+
+Please see https://iframe-resizer.com/upgrade for more details.
+
+index-BEOc6HW1.js:238 
+            
+            
+           GET https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/api/firm-profiles?_t=1748283637289 404 (Not Found)
+(anonymous) @ index-BEOc6HW1.js:238
+i @ index-BEOc6HW1.js:238
+x @ index-BEOc6HW1.js:238
+(anonymous) @ index-BEOc6HW1.js:238
+Promise.then
+(anonymous) @ index-BEOc6HW1.js:238
+Promise.catch
+x @ index-BEOc6HW1.js:238
+start @ index-BEOc6HW1.js:238
+fetch @ index-BEOc6HW1.js:238
+ya @ index-BEOc6HW1.js:238
+onSubscribe @ index-BEOc6HW1.js:238
+subscribe @ index-BEOc6HW1.js:238
+(anonymous) @ index-BEOc6HW1.js:238
+u1 @ index-BEOc6HW1.js:39
+xd @ index-BEOc6HW1.js:41
+eo @ index-BEOc6HW1.js:41
+Jy @ index-BEOc6HW1.js:41
+Rs @ index-BEOc6HW1.js:39
+VN @ index-BEOc6HW1.js:41
+Fs @ index-BEOc6HW1.js:41
+U1 @ index-BEOc6HW1.js:41
+S @ index-BEOc6HW1.js:26
+O @ index-BEOc6HW1.js:26Understand this error
+index-BEOc6HW1.js:18 API error (404): {"error":"API endpoint not found"}
+console.error @ index-BEOc6HW1.js:18
+(anonymous) @ index-BEOc6HW1.js:238
+await in (anonymous)
+i @ index-BEOc6HW1.js:238
+x @ index-BEOc6HW1.js:238
+(anonymous) @ index-BEOc6HW1.js:238
+Promise.then
+(anonymous) @ index-BEOc6HW1.js:238
+Promise.catch
+x @ index-BEOc6HW1.js:238
+start @ index-BEOc6HW1.js:238
+fetch @ index-BEOc6HW1.js:238
+ya @ index-BEOc6HW1.js:238
+onSubscribe @ index-BEOc6HW1.js:238
+subscribe @ index-BEOc6HW1.js:238
+(anonymous) @ index-BEOc6HW1.js:238
+u1 @ index-BEOc6HW1.js:39
+xd @ index-BEOc6HW1.js:41
+eo @ index-BEOc6HW1.js:41
+Jy @ index-BEOc6HW1.js:41
+Rs @ index-BEOc6HW1.js:39
+VN @ index-BEOc6HW1.js:41
+Fs @ index-BEOc6HW1.js:41
+U1 @ index-BEOc6HW1.js:41
+S @ index-BEOc6HW1.js:26
+O @ index-BEOc6HW1.js:26Understand this error
+index-BEOc6HW1.js:18 Query error: Error: API error: 404 {"error":"API endpoint not found"}
+    at index-BEOc6HW1.js:238:47326

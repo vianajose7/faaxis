@@ -1,0 +1,10 @@
+{
+  "workflows": [
+    {
+      "name": "Start Dev Server",
+      "command": "bash start-dev-server.sh",
+      "restart_on": ["server/**", "client/**", "shared/**", "*.js", "*.ts", "*.tsx"],
+      "on_start": true
+    }
+  ]
+}

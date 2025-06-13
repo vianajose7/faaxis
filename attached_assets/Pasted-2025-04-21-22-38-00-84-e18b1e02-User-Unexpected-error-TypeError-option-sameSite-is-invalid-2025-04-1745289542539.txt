@@ -1,0 +1,88 @@
+2025-04-21 22:38:00.84
+e18b1e02
+User
+Unexpected error: TypeError: option sameSite is invalid
+2025-04-21 22:38:00.84
+e18b1e02
+User
+at Object.serialize (/home/runner/workspace/node_modules/csurf/node_modules/cookie/index.js:174:15)
+2025-04-21 22:38:00.84
+e18b1e02
+User
+at setCookie (/home/runner/workspace/node_modules/csurf/index.js:246:21)
+2025-04-21 22:38:00.84
+e18b1e02
+User
+at setSecret (/home/runner/workspace/node_modules/csurf/index.js:275:5)
+2025-04-21 22:38:00.84
+e18b1e02
+User
+at csrf (/home/runner/workspace/node_modules/csurf/index.js:107:7)
+2025-04-21 22:38:00.84
+e18b1e02
+User
+at (/home/runner/workspace/server/index.ts:101:5)
+2025-04-21 22:38:00.84
+e18b1e02
+User
+at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+2025-04-21 22:38:00.84
+e18b1e02
+User
+at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+2025-04-21 22:38:00.84
+e18b1e02
+User
+at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+2025-04-21 22:38:00.84
+e18b1e02
+User
+at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+2025-04-21 22:38:00.84
+e18b1e02
+User
+at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+2025-04-21 22:38:00.85
+e18b1e02
+User
+Unhandled error: TypeError: option sameSite is invalid
+2025-04-21 22:38:00.85
+e18b1e02
+User
+at Object.serialize (/home/runner/workspace/node_modules/csurf/node_modules/cookie/index.js:174:15)
+2025-04-21 22:38:00.85
+e18b1e02
+User
+at setCookie (/home/runner/workspace/node_modules/csurf/index.js:246:21)
+2025-04-21 22:38:00.85
+e18b1e02
+User
+at setSecret (/home/runner/workspace/node_modules/csurf/index.js:275:5)
+2025-04-21 22:38:00.85
+e18b1e02
+User
+at csrf (/home/runner/workspace/node_modules/csurf/index.js:107:7)
+2025-04-21 22:38:00.85
+e18b1e02
+User
+at (/home/runner/workspace/server/index.ts:101:5)
+2025-04-21 22:38:00.85
+e18b1e02
+User
+at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+2025-04-21 22:38:00.85
+e18b1e02
+User
+at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+2025-04-21 22:38:00.85
+e18b1e02
+User
+at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+2025-04-21 22:38:00.85
+e18b1e02
+User
+at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+2025-04-21 22:38:00.85
+e18b1e02
+User
+at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)

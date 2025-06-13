@@ -1,0 +1,12 @@
+{
+  "buildCommand": "npm ci && npm run build",
+  "startCommand": "npm start",
+  "environmentVariables": {
+    "NODE_ENV": "production",
+    "PORT": "$PORT"
+  },
+  "healthCheck": {
+    "path": "/api/auth/status",
+    "expectedStatus": 200
+  }
+}

@@ -1,0 +1,87 @@
+//////////////////////////////////////////////////////////////////
+//  DESIGN‑IMPLEMENTATION REQUEST – FAAxis Dark Theme Rebuild  //
+//////////////////////////////////////////////////////////////////
+
+GOAL
+‑ Re‑skin the existing FAAxis.com front‑end so it visually matches
+  the new dark mock‑up (see attached screenshot) while keeping all
+  current routes, data‑hooks, and SEO tags intact.
+
+HIGH‑LEVEL LOOK & FEEL
+‑ Overall vibe: Fin‑tech / trading dashboard, high contrast, sleek.
+‑ Color  palette:
+    -- bg‑gradient‑top:  #0D0F18
+    -- bg‑gradient‑bottom: #121424
+    -- primary‑accent:   #755CFF  (lavender‑indigo)
+    -- secondary‑accent: #45C8FF  (electric blue)
+    -- success‑green:    #43F04F
+    -- danger‑red:       #F04452
+    -- text‑primary:     #FFFFFF
+    -- text‑muted:       #9CA3AF
+‑ Font:  “Inter” 400 / 600; fallback “Roboto”, sans‑serif.
+‑ Rounded corners: 12 px (lg in Tailwind).
+‑ Soft shadow throughout (`shadow-[rgba(0,0,0,0.6)_0px_4px_20px]`).
+‑ Motion: subtle fade‑in / slide‑up on first viewport entry
+  (Framer Motion; 0.4 s easeOut).
+
+SECTIONS TO BUILD / RESTYLE
+1. **Nav Bar**
+   •  Left: FAAxis logo (new violet “AXIS” mark; “financial advisor” caption).
+   •  Center nav items: Transitions | Buy–Sell | Marketing | News
+      – white text, 14 px, 400 weight; on hover → `text-primary-accent`.
+   •  Right CTA:  pill button “Get a Deal”,  bg‑transparent border‑accent,
+      hover→ bg‑accent/10.
+
+2. **Hero (100 vh minus navbar)**
+   •  Headline: “Your Next Move, Simplified.”  
+      –  clamp(36px,4vw,60px) font‑weight 700, color text‑primary.
+   •  Sub‑copy: “No fees. No pressure. Just real offers …”  
+      – 16 px, text‑muted, max‑width 620 px, center.
+   •  Hero visual: dashboard mock‑up (responsive 16:9) with floating
+      cards (Guaranteed Upfront, Backend Breakdown).  Use absolute
+      positioned divs at  -40px offsets; drop‑shadow & slight rotation
+      (`rotate‑6`, `‑rotate‑3`).
+   •  Background: radial‑gradient (#1A1C34 0%, #0D0F18 70%).
+
+3. **Feature Grid**
+   •  3‑column cards: “Instant Dashboard”, “Compare 30+ Firms”,
+      “Guaranteed Privacy”.
+   •  Icon left, title 18 px, body 14 px, card hover‑glow
+      (`ring-1 ring-accent/30`).
+
+4. **Calculator CTA Strip**
+   •  Full‑width, violet‑blue gradient (#5E4BFF → #45C8FF),
+      40 px padding, headline “Run Your Numbers in 60 Seconds”.
+   •  White “Try the Calculator” button, shadow‑xl.
+
+5. **Footer**
+   •  Same dark bg, 2‑column: quick links & disclaimer.
+   •  Very muted text (#6B7280).  Copyright → current year via JS.
+
+TECH / IMPLEMENTATION NOTES
+‑ Tech stack already Tailwind + React?  Continue; else Tailwind CDN.
+‑ Add custom colors in `tailwind.config.js` under `extend.colors`.
+‑ Global dark <body> gradient via    `body { @apply bg-gradient-to-b from-[#0D0F18] to-[#121424]; }`
+‑ Use `next/head` (if Next.js) or `<Helmet>` to keep existing meta.
+‑ Preserve all form endpoints & Stripe logic—only styling is changing.
+
+ACCESSIBILITY
+‑ Maintain contrast ratio WCAG AA (≥4.5) on text vs. bg.
+‑ Add `aria-label` to nav icons & CTA buttons.
+‑ Keyboard‑focus ring: `outline-accent/80`.
+
+DELIVERABLES
+1. PR / branch `feat/dark-theme`.
+2. Updated Tailwind config & global CSS.
+3. React/HTML component updates (Nav, Hero, FeatureGrid, Footer).
+4. One screenshot per major breakpoint (1440 px, 1024 px, 768 px, 375 px).
+5. Optional: Storybook story for each component.
+
+TIMELINE
+‑ First visual pass by EOD next business day.
+‑ Pixel‑polish & QA ready for merge within 48 hrs after feedback round.
+
+////////////////////////////////////////////////////////
+Paste below this line any questions or blockers you have
+about the design tokens, images, or existing component tree.
+////////////////////////////////////////////////////////

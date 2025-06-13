@@ -1,0 +1,124 @@
+Let’s simplify everything by folding your build‐and‐deploy logic back into package.json scripts (no extra shell files), so that Replit (or Cloud Run) just needs:
+	•	Build command: npm ci && npm run build
+	•	Run command: npm run start
+
+⸻
+
+1) Edit your package.json
+
+Open your package.json at the project root and replace (or merge) your "scripts" section with something like:
+
+{
+  // …other fields…
+  "scripts": {
+    // 1) Build the React client into dist/public
+    "build:client": "vite build",
+
+    // 2) Compile your server (adjust tsconfig path if needed)
+    "build:server": "tsc --project server/tsconfig.json --outDir dist",
+
+    // 3) Combined build step
+    "build": "npm run build:client && npm run build:server",
+
+    // 4) Launch your custom prod server
+    "start": "node production-deployment.js"
+  }
+}
+
+Note:
+	•	If your Vite config is in client/vite.config.ts, prefix the build:client with a cd client &&
+	•	Likewise, point tsc -p at wherever your server’s tsconfig.json lives.
+
+⸻
+
+2) Confirm your vite.config.ts
+
+In whichever directory holds your vite.config.ts, ensure the build.outDir points at ../dist/public. For example:
+
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
+
+export default defineConfig({
+  root: path.resolve(__dirname),       // or './client' if you’re one level down
+  plugins: [react()],
+  build: {
+    outDir: path.resolve(__dirname, '../dist/public'),
+    emptyOutDir: true
+  }
+})
+
+
+⸻
+
+3) Verify your production-deployment.js
+
+You should already have our final version:
+
+import express from 'express';
+import http from 'http';
+import path from 'path';
+import { registerRoutes } from './dist/index.js';
+
+console.log('▶️  production-deployment.js starting…');
+
+const PORT = process.env.PORT || 3000;
+process.env.PORT = PORT;
+
+const origListen = http.Server.prototype.listen;
+http.Server.prototype.listen = function(...args) {
+  if ((args[0] === 5000) || (args[0]?.port === 5000)) {
+    args[0] = typeof args[0] === 'number'
+      ? PORT
+      : { ...args[0], port: PORT };
+  }
+  return origListen.apply(this, args);
+};
+
+const app = express();
+app.get('/health', (_req, res) => res.sendStatus(200));
+
+const publicDir = path.join(process.cwd(), 'dist/public');
+app.use(express.static(publicDir));
+app.get(/^(?!\/api\/).*/, (_req, res) =>
+  res.sendFile(path.join(publicDir, 'index.html'))
+);
+
+registerRoutes(app);
+
+app.listen(PORT, () => {
+  console.log(`✔️  Server listening on port ${PORT}`);
+});
+
+
+⸻
+
+4) Redeploy
+	1.	Set Replit (or Cloud Run) to:
+	•	Build command:
+
+npm ci && npm run build
+
+
+	•	Run command:
+
+npm run start
+
+
+	2.	Click Redeploy, then watch the logs. You should see:
+
+▶️  production-deployment.js starting…
+✔️  Server listening on port 3000
+
+
+	3.	Smoke-test in your browser or via curl:
+	•	GET /health → 200
+	•	GET / → your built SPA (assets under /assets/…)
+	•	GET /api/... → your real endpoints
+
+That will guarantee:
+	•	Your React app is built into dist/public
+	•	Your server code is compiled into dist/index.js
+	•	The custom deployment file mounts /health, serves the SPA, and monkey-patches any stray listen(5000)
+
+Let me know once you see those startup logs and the 200 on /health, and we can call it done!

@@ -1,0 +1,56 @@
+// production-entry.js
+// Enhanced entry point for Replit deployment
+
+// Environment setup
+console.log('Starting production server...');
+process.env.NODE_ENV = 'production';
+process.env.PORT = process.env.PORT || '3000';
+const PORT = process.env.PORT || 3000;
+
+// Create express app and server early (before importing your code)
+import express from 'express';
+import http from 'http';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Create express app
+const app = express();
+const server = http.createServer(app);
+
+// Add immediate health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
+// Start listening immediately to pass health checks
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server listening on port ${PORT}`);
+  
+  // Import your compiled server code after server is already listening
+  import('./dist/index.js')
+    .then(async (module) => {
+      try {
+        // Check if registerRoutes function exists and call it correctly
+        if (typeof module.registerRoutes === 'function') {
+          // Based on your grep output, it expects an app parameter
+          // and returns a server through await
+          console.log('Calling registerRoutes with app parameter...');
+          await module.registerRoutes(app);
+        } else if (typeof module.default?.registerRoutes === 'function') {
+          // Try default export if direct export not found
+          console.log('Calling default.registerRoutes with app parameter...');
+          await module.default.registerRoutes(app);
+        } else {
+          console.error('Could not find registerRoutes function in imported module');
+          console.log('Available exports:', Object.keys(module));
+        }
+        console.log('Server initialization complete');
+      } catch (err) {
+        console.error('Error during server initialization:', err);
+      }
+    })
+    .catch(err => {
+      console.error('Failed to import server module:', err);
+      process.exit(1);
+    });
+});

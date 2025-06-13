@@ -1,0 +1,84 @@
+import { createContext, useContext, useEffect, useState } from 'react';
+import { apiRequest } from '../lib/queryClient';
+
+let jwtToken: string | null = null;
+
+export function setJwtTokenForAuth(token: string | null) {
+  jwtToken = token;
+}
+
+type User = {
+  id: number;
+  username: string;
+  firstName: string;
+  lastName: string;
+  isAdmin: boolean;
+};
+
+interface JwtAuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  login: (values: { username: string; password: string }) => Promise<void>;
+  logout: () => Promise<void>;
+  register: (values: { username: string; password: string; firstName: string; lastName: string }) => Promise<void>;
+}
+
+const JwtAuthContext = createContext<JwtAuthContextType>({} as JwtAuthContextType);
+
+export function useJwtAuth() {
+  return useContext(JwtAuthContext);
+}
+
+export function JwtAuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await apiRequest('GET', '/api/jwt/me');
+        const result = await res.json();
+        if (result?.user) {
+          setUser(result.user);
+        }
+      } catch (error) {
+        setUser(null);
+      }
+    })();
+  }, []);
+
+  async function login(values: { username: string; password: string }) {
+    const res = await apiRequest('POST', '/api/jwt/login', values);
+    const result = await res.json();
+    if (result.token) {
+      setJwtTokenForAuth(result.token);
+      setUser(result.user);
+    }
+  }
+
+  async function register(values: { username: string; password: string; firstName: string; lastName: string }) {
+    const res = await apiRequest('POST', '/api/jwt/register', values);
+    const result = await res.json();
+    if (result.token) {
+      setJwtTokenForAuth(result.token);
+      setUser(result.user);
+    }
+  }
+
+  async function logout() {
+    await apiRequest('POST', '/api/jwt/logout');
+    setJwtTokenForAuth(null);
+    setUser(null);
+  }
+
+  const value: JwtAuthContextType = {
+    user,
+    isAuthenticated: !!user,
+    login,
+    logout,
+    register,
+  };
+
+  return <JwtAuthContext.Provider value={value}>{children}</JwtAuthContext.Provider>;
+}
+
+export { jwtToken };

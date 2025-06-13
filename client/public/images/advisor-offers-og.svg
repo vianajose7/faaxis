@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#0F172A"/>
+  <rect x="40" y="40" width="1120" height="550" rx="15" fill="#1E293B"/>
+  
+  <!-- Logo-like element -->
+  <path d="M240 200 L360 200 L400 315 L320 400 L240 315 Z" fill="#3B82F6"/>
+  <path d="M420 200 L540 200 L580 315 L500 400 L420 315 Z" fill="#2563EB"/>
+  
+  <!-- Text -->
+  <text x="600" y="260" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="white">Financial</text>
+  <text x="600" y="340" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="#3B82F6">AXIS</text>
+  
+  <text x="600" y="420" font-family="Arial, sans-serif" font-size="24" fill="#94A3B8">Financial Advisor Career Insights</text>
+  <text x="600" y="460" font-family="Arial, sans-serif" font-size="24" fill="#94A3B8">Compensation Analysis Platform</text>
+</svg>

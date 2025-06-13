@@ -1,0 +1,21 @@
+[vite] connecting... client:495:8
+[vite] failed to connect to websocket ([Exception... "The load for this content was blocked."  nsresult: "0x805e0006 (NS_ERROR_CONTENT_BLOCKED)"  location: "JS frame :: https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/@vite/client :: setupWebSocket :: line 536"  data: no]). client:533:10
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at ws://0.0.0.0:443/?token=0VVjXnki-jDo because it violates the following directive: “connect-src 'self' https://api.openai.com https://api.perplexity.ai https://api.stripe.com https://*.stripe.com https://www.linkedin.com” client:536:18
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools react-dom.development.js:29895:16
+Content-Security-Policy: The page’s settings blocked a style (style-src-elem) at https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap from being applied because it violates the following directive: “style-src 'self' 'unsafe-inline'” client:802:24
+[CountUp] target is null or undefined null error-handler.ts:44:20
+[CountUp] target is null or undefined null error-handler.ts:44:20
+[CountUp] target is null or undefined null error-handler.ts:44:20
+[CountUp] target is null or undefined null error-handler.ts:44:20
+[CountUp] target is null or undefined null error-handler.ts:44:20
+[CountUp] target is null or undefined null error-handler.ts:44:20
+[CountUp] target is null or undefined null error-handler.ts:44:20
+[CountUp] target is null or undefined null error-handler.ts:44:20
+Warning: Using UNSAFE_componentWillMount in strict mode is not recommended and may indicate bugs in your code. See https://reactjs.org/link/unsafe-component-lifecycles for details.
+
+* Move code with side effects to componentDidMount, and set initial state in the constructor.
+
+Please update the following components: SideEffect(NullComponent2) error-handler.ts:44:20
+XHRGET
+https://b8c736c6-40a1-4bb1-af36-eeb7ad533fdc-00-1sqqkajo6e3i4.worf.replit.dev/api/user?_t=1747856824470
+[HTTP/1.1 401 Unauthorized 308ms]

@@ -1,0 +1,105 @@
+######################################################################
+# GOAL
+######################################################################
+1. Remove hard‑coded admin creds and “dev” OTP overlay.
+2. Implement secure admin‑password‑reset + one‑time‑passcode (OTP)
+   emailed via **MailerLite**, not shown in the UI.
+3. Do NOT break existing user auth / routes.
+4. Build after every commit; stop & paste logs on error.
+
+######################################################################
+# STEP 1 – Hard‑coded creds → env vars
+######################################################################
+*server/admin-auth.ts* (or equivalent)
+- Delete fallback checks for:
+    vianajose7@gmail.com / fytguHj#$%^78ujiytd!
+    dev-admin@advisoro.com / devadminpass
+- Replace with:
+    ```ts
+    const ADMIN_EMAIL  = process.env.ADMIN_EMAIL;
+    const ADMIN_HASH   = process.env.ADMIN_PASSWORD_HASH; // bcrypt
+    ```
+- If env vars missing → `403  "Admin credentials not configured"`.
+
+Add **ADMIN_EMAIL** and **ADMIN_PASSWORD_HASH** (bcrypt) to Replit secrets.
+
+`npm run build`  (must pass)
+
+Commit:  
+`git add server/admin-auth.ts`  
+`git commit -m "feat(auth): env‑based admin creds"`
+
+######################################################################
+# STEP 2 – Password‑reset + OTP flow
+######################################################################
+### 2‑A  Request reset
+POST `/api/admin-auth/request-reset`
+body `{ email }`
+
+- Validate email === ADMIN_EMAIL  
+- Generate `const token = crypto.randomBytes(32).toString('hex')`
+- Generate 6‑digit `otp = Math.floor(100000+Math.random()*900000)`
+- Store `{ token, otp, exp: Date.now()+15*60_000 }` in an in‑memory `Map`.
+
+➜  Send OTP e‑mail via **MailerLite API**  
+   (key already in secrets as `MAILERLITE_API_KEY`).  
+   Template: “Your FA Axis admin verification code: ${otp} (15 min expiry)”.
+
+### 2‑B  Verify + set new password
+POST `/api/admin-auth/reset`
+body `{ token, otp, newPassword }`
+
+- Fetch record, verify `otp` & expiry
+- Hash `newPassword` (bcrypt) → update **ADMIN_PASSWORD_HASH** env var in‑memory
+- Delete record, return 200.
+
+### 2‑C  Remove DEV overlay
+- Locate component/service that `console.log`’s or shows OTP in a bottom‑right toast.  
+  Delete it.  No OTPs should render in the client.
+
+`npm run build`
+
+Commit:  
+`git add server/...`  
+`git commit -m "feat(auth): OTP email reset via MailerLite; remove dev overlay"`
+
+######################################################################
+# STEP 3 – Front‑end page
+######################################################################
+*client/src/pages/admin-reset.tsx*
+Two states:
+
+1. **Request**: email field → POST `/api/admin-auth/request-reset`
+   - Show “Check your e‑mail for a 6‑digit code.”
+
+2. **Reset**: fields (token hidden via URL param), OTP, newPassword →
+   POST `/api/admin-auth/reset`
+
+Add route in `client/src/App.tsx` → `/admin-reset`.
+
+Link “Forgot password?” in admin login page to `/admin-reset`.
+
+`npm run build`
+
+Commit:  
+`git add client/src/pages/admin-reset.tsx client/src/App.tsx`  
+`git commit -m "feat(ui): admin forgot/reset password page"`
+
+######################################################################
+# STEP 4 – QA checklist
+######################################################################
+- `/secure-management-portal` inaccessible until admin logs in.
+- Request‑reset sends MailerLite e‑mail (check console for API 200).
+- OTP no longer appears in UI.
+- Reset sets new password; login works with new password only.
+- `git grep -i "devadminpass"` returns nothing.
+
+######################################################################
+# BUILD / LOG POLICY
+######################################################################
+Run `npm run build` after each commit.  
+If the build fails, STOP and paste the log instead of pushing further.
+
+######################################################################
+# END
+######################################################################

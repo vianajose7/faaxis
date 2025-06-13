@@ -1,0 +1,42 @@
+ Details: fetch failed
+[PRODUCTION] Database connection failed after all retries
+[PRODUCTION] Error creating user (attempt 2 ): All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Retrying database connection in 2000 ms...
+[PRODUCTION] Error creating user (attempt 3 ): All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Retrying database connection in 3000 ms...
+[SPA] Serving /auth -> index.html
+[PRODUCTION] Error getting user (attempt 4 ): All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Database connection failed after all retries
+[PRODUCTION] Error creating user (attempt 2 ): All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Retrying database connection in 2000 ms...
+[PRODUCTION] Error creating user (attempt 3 ): All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Retrying database connection in 3000 ms...
+[PRODUCTION] Error creating user (attempt 3 ): All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Retrying database connection in 3000 ms...
+[PRODUCTION] Error creating user (attempt 3 ): All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Retrying database connection in 3000 ms...
+[PRODUCTION] Error creating user (attempt 3 ): All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Retrying database connection in 3000 ms...
+[SPA] Serving /calculator -> index.html
+[SPA] Serving /dashboard -> index.html
+[PRODUCTION] Error creating user (attempt 4 ): All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Registration error: Error: Database connection temporarily unavailable. Please try again.
+    at createUser (/home/runner/workspace/production-server.cjs:108:15)
+    at async /home/runner/workspace/production-server.cjs:278:18
+[SPA] Serving /marketplace -> index.html
+[PRODUCTION] Error creating user (attempt 4 ): All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Registration error: Error: Database connection temporarily unavailable. Please try again.
+    at createUser (/home/runner/workspace/production-server.cjs:108:15)
+    at async /home/runner/workspace/production-server.cjs:278:18
+[PRODUCTION] Error creating user (attempt 4 ): All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Registration error: Error: Database connection temporarily unavailable. Please try again.
+    at createUser (/home/runner/workspace/production-server.cjs:108:15)
+    at async /home/runner/workspace/production-server.cjs:278:18
+[PRODUCTION] Error creating user (attempt 4 ): All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Registration error: Error: Database connection temporarily unavailable. Please try again.
+    at createUser (/home/runner/workspace/production-server.cjs:108:15)
+    at async /home/runner/workspace/production-server.cjs:278:18
+[PRODUCTION] Error creating user (attempt 4 ): All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Registration error: Error: Database connection temporarily unavailable. Please try again.
+    at createUser (/home/runner/workspace/production-server.cjs:108:15)
+    at async /home/runner/workspace/production-server.cjs:178:18

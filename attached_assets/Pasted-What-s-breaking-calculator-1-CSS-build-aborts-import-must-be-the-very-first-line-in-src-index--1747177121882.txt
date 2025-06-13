@@ -1,0 +1,42 @@
+What’s breaking /calculator
+	1.	CSS build aborts – @import must be the very first line in src/index.css.
+	2.	JS runtime crash – firmList is referenced before it’s imported/declared inside client/src/components/calculator/firm‑selector.tsx → React throws and the whole page blanks.
+
+⸻
+
+60‑second copy‑paste fix for Replit
+
+Paste the block below in the Replit shell, hit Enter, and wait for the dev‑server to auto‑reload.
+
+### ---------- FIX index.css build error ----------
+css='client/src/index.css'                       # or src/index.css if that’s where it lives
+tmp=$(mktemp)
+{ grep '^@import ' "$css"; grep -v '^@import ' "$css"; } > "$tmp" && mv "$tmp" "$css"
+
+### ---------- FIX firmList runtime error ----------
+file='client/src/components/calculator/firm-selector.tsx'
+
+# 1) ensure we import the shared list at the very top
+grep -q "from 'shared/firmList'" "$file" || \
+  sed -i '1i\import { firmList } from "../../../shared/firmList";' "$file"
+
+# 2) remove the premature reference that causes the crash
+sed -i '/staticFirms = \[...firmList\]/d' "$file"
+
+# 3) simplify unique‑name helper to just return the list
+sed -i 's/function getUniqueFirmNames.*/const getUniqueFirmNames = () => firmList.map(f => f.name);/' "$file"
+
+### ---------- restart vite + express if they didn’t hot‑reload ----------
+pkill -f "tsx server/index.ts" 2>/dev/null || true
+NODE_ENV=development tsx server/index.ts &
+echo -e "\n✅   Fix applied – reload /calculator"
+
+What it does
+
+Line	Effect
+index.css tweak	Moves Google‑fonts @import to the top so Vite’s PostCSS parser stops aborting.
+firm‑selector.tsx patch	• Adds the missing import { firmList }.• Removes the early staticFirms declaration that referenced firmList before import.• Makes getUniqueFirmNames() just read from the list (no double processing).
+Restart	Restarts the dev server so both the CSS and the JS rebuild cleanly.
+
+After this you should see the calculator page render again.
+If anything else still errors, copy the first red line from the browser console – that pinpoints the next offender.

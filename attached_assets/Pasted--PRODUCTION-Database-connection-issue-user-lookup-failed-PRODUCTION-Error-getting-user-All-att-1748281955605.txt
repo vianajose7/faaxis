@@ -1,0 +1,27 @@
+[PRODUCTION] Database connection issue, user lookup failed
+[PRODUCTION] Error getting user: All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Database connection issue, user lookup failed
+[PRODUCTION] Error getting user: All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Database connection issue, user lookup failed
+[PRODUCTION] Error creating user: All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Registration error: Error: Database connection temporarily unavailable. Please try again.
+    at createUser (/home/runner/workspace/production-server.cjs:84:13)
+    at async /home/runner/workspace/production-server.cjs:152:18
+[PRODUCTION] Error getting user: All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Database connection issue, user lookup failed
+[PRODUCTION] Error creating user: All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Registration error: Error: Database connection temporarily unavailable. Please try again.
+    at createUser (/home/runner/workspace/production-server.cjs:84:13)
+    at async /home/runner/workspace/production-server.cjs:252:18
+[PRODUCTION] Error getting user: All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Database connection issue, user lookup failed
+[PRODUCTION] Error creating user: All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Registration error: Error: Database connection temporarily unavailable. Please try again.
+    at createUser (/home/runner/workspace/production-server.cjs:84:13)
+    at async /home/runner/workspace/production-server.cjs:152:18
+[PRODUCTION] Error getting user: All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Database connection issue, user lookup failed
+[PRODUCTION] Error creating user: All attempts to open a WebSocket to connect to the database failed. Please refer to https://github.com/neondatabase/serverless/blob/main/CONFIG.md#websocketconstructor-typeof-websocket--undefined. Details: fetch failed
+[PRODUCTION] Registration error: Error: Database connection temporarily unavailable. Please try again.
+    at createUser (/home/runner/workspace/production-server.cjs:84:13)
+    at async /home/runner/workspace/production-server.cjs:152:18

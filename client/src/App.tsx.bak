@@ -1,0 +1,262 @@
+import { Switch, Route, useLocation } from "wouter";
+import { Toaster } from "@/components/ui/toaster";
+import { lazy, Suspense } from "react";
+import { Loader2 } from "lucide-react";
+
+// Import HomePage normally since it's the main entry point
+import HomePage from "@/pages/home-page";
+
+// Lazy load other pages to improve initial load time
+const AuthPage = lazy(() => import("@/pages/auth-page"));
+const AdminLoginPage = lazy(() => import("@/pages/admin-login"));
+const ResetAdminPasswordPage = lazy(() => import("@/pages/reset-admin-password"));
+const CalculatorPage = lazy(() => import("@/pages/calculator-page"));
+const CheckoutPage = lazy(() => import("@/pages/checkout-page"));
+const DetailedCalculatorPage = lazy(() => import("@/pages/detailed-calculator-page"));
+const NotFound = lazy(() => import("@/pages/not-found"));
+const VerifyEmailPage = lazy(() => import("@/pages/verify-email-page"));
+const ForgotPasswordPage = lazy(() => import("@/pages/forgot-password-page"));
+const ResetPasswordPage = lazy(() => import("@/pages/reset-password-page"));
+const DashboardPage = lazy(() => import("@/pages/dashboard-page"));
+const BlogPage = lazy(() => import("@/pages/blog-page"));
+const BlogArticlePage = lazy(() => import("@/pages/blog-article-page"));
+const NewsPage = lazy(() => import("@/pages/news-page"));
+const NewsArticlePage = lazy(() => import("@/pages/news-article-page"));
+const MarketplacePage = lazy(() => import("@/pages/marketplace-page"));
+const MarketingPage = lazy(() => import("@/pages/marketing-page-new"));
+const ReviewsPage = lazy(() => import("@/pages/reviews-page"));
+const FAQPage = lazy(() => import("@/pages/faq-page"));
+const PrivacyPage = lazy(() => import("@/pages/privacy-page"));
+const TermsPage = lazy(() => import("@/pages/terms-page"));
+const AdminPage = lazy(() => import("@/pages/admin-page"));
+const SimpleEnhancedCalculator = lazy(() => import("@/pages/simple-enhanced-calculator"));
+const CMSDashboard = lazy(() => import("@/pages/cms-dashboard"));
+const CareersPage = lazy(() => import("@/pages/careers-page"));
+const FeedbackPage = lazy(() => import("@/pages/feedback-page"));
+const AboutPage = lazy(() => import("@/pages/about-page"));
+const FirmProfilesPage = lazy(() => import("@/pages/firm-profiles-page"));
+const FirmProfileDetailPage = lazy(() => import("@/pages/firm-profile-detail-page"));
+const SecureManagementPortal = lazy(() => import("@/pages/secure-management-portal"));
+const BlogPostsAdmin = lazy(() => import("@/pages/blog-posts-admin"));
+const PracticeListingsAdmin = lazy(() => import("@/pages/practice-listings-admin"));
+const MarketplaceAdmin = lazy(() => import("@/pages/marketplace-admin"));
+const FirmProfilesAdmin = lazy(() => import("@/pages/firm-profiles-admin"));
+const WebsitePagesAdmin = lazy(() => import("@/pages/website-pages-admin"));
+const UserManagementAdmin = lazy(() => import("@/pages/user-management-admin"));
+const AdminSettings = lazy(() => import("@/pages/admin-settings"));
+// Import protected route component
+import { ProtectedRoute } from "./lib/protected-route";
+import { AdvisorInfoProvider, useAdvisorInfo } from "./hooks/use-advisor-info";
+import { AuthProvider, useAuth } from "./hooks/use-auth";
+import { ThemeProvider } from "./hooks/use-theme";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./lib/queryClient";
+import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { ScrollToTop } from "@/components/layout/scroll-to-top";
+
+// Create wrapper components for protected routes
+const ProtectedDashboardPage = () => {
+  return (
+    <ProtectedRoute 
+      path="/dashboard" 
+      component={() => <DashboardPage />} 
+    />
+  );
+};
+
+const ProtectedDetailedCalculatorPage = () => {
+  return (
+    <ProtectedRoute 
+      path="/detailed-calculator" 
+      component={() => <DetailedCalculatorPage />} 
+    />
+  );
+};
+
+const ProtectedAdminPage = () => {
+  return (
+    <ProtectedRoute 
+      path="/secure-management-portal" 
+      component={() => <SecureManagementPortal />} 
+      requireAdmin={true}
+      requireVerified={true}
+    />
+  );
+};
+
+const ProtectedCMSDashboard = () => {
+  return (
+    <ProtectedRoute 
+      path="/secure-cms-dashboard" 
+      component={() => <CMSDashboard />} 
+      requireAdmin={true}
+      requireVerified={true}
+    />
+  );
+};
+
+// Admin route components
+const ProtectedBlogPostsAdmin = () => {
+  return (
+    <ProtectedRoute 
+      path="/cms-dashboard" 
+      component={() => <BlogPostsAdmin />} 
+      requireAdmin={true}
+      requireVerified={true}
+    />
+  );
+};
+
+const ProtectedPracticeListingsAdmin = () => {
+  return (
+    <ProtectedRoute 
+      path="/practice-listings-admin" 
+      component={() => <PracticeListingsAdmin />} 
+      requireAdmin={true}
+      requireVerified={true}
+    />
+  );
+};
+
+const ProtectedMarketplaceAdmin = () => {
+  return (
+    <ProtectedRoute 
+      path="/marketplace-admin" 
+      component={() => <MarketplaceAdmin />} 
+      requireAdmin={true}
+      requireVerified={true}
+    />
+  );
+};
+
+const ProtectedFirmProfilesAdmin = () => {
+  return (
+    <ProtectedRoute 
+      path="/firm-profiles-admin" 
+      component={() => <FirmProfilesAdmin />} 
+      requireAdmin={true}
+      requireVerified={true}
+    />
+  );
+};
+
+const ProtectedWebsitePagesAdmin = () => {
+  return (
+    <ProtectedRoute 
+      path="/pages-admin" 
+      component={() => <WebsitePagesAdmin />} 
+      requireAdmin={true}
+      requireVerified={true}
+    />
+  );
+};
+
+const ProtectedUserManagementAdmin = () => {
+  return (
+    <ProtectedRoute 
+      path="/user-management" 
+      component={() => <UserManagementAdmin />} 
+      requireAdmin={true}
+      requireVerified={true}
+    />
+  );
+};
+
+const ProtectedAdminSettings = () => {
+  return (
+    <ProtectedRoute 
+      path="/admin-settings" 
+      component={() => <AdminSettings />} 
+      requireAdmin={true}
+      requireVerified={true}
+    />
+  );
+};
+
+function Router() {
+  const [location] = useLocation();
+  
+  // Scroll to top on route changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+
+  // Loading fallback component for lazy-loaded routes
+  const LoadingFallback = () => (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+        <p className="text-muted-foreground">Loading page...</p>
+      </div>
+    </div>
+  );
+
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <Switch>
+        <Route path="/" component={HomePage} />
+        <Route path="/calculator" component={CalculatorPage} />
+        <Route path="/checkout" component={CheckoutPage} />
+        <Route path="/auth" component={AuthPage} />
+        <Route path="/admin-login" component={() => <AdminLoginPage />} />
+        <Route path="/admin" component={() => <AdminLoginPage />} />
+        <Route path="/reset-admin-password" component={() => <ResetAdminPasswordPage />} />
+        <Route path="/verify-email" component={VerifyEmailPage} />
+        <Route path="/forgot-password" component={ForgotPasswordPage} />
+        <Route path="/reset-password" component={ResetPasswordPage} />
+        <Route path="/blog" component={BlogPage} />
+        <Route path="/blog/:slug" component={BlogArticlePage} />
+        <Route path="/news" component={NewsPage} />
+        <Route path="/news/:slug" component={NewsArticlePage} />
+        <Route path="/marketplace" component={MarketplacePage} />
+        <Route path="/marketing" component={MarketingPage} />
+        <Route path="/reviews" component={ReviewsPage} />
+        <Route path="/faq" component={FAQPage} />
+        <Route path="/privacy" component={PrivacyPage} />
+        <Route path="/terms" component={TermsPage} />
+        <Route path="/about" component={AboutPage} />
+        <Route path="/careers" component={CareersPage} />
+        <Route path="/feedback" component={FeedbackPage} />
+        <Route path="/firm-profiles" component={FirmProfilesPage} />
+        <Route path="/firm-profiles/:id" component={FirmProfileDetailPage} />
+        <Route path="/simple-enhanced" component={SimpleEnhancedCalculator} />
+        
+        {/* Protected routes */}
+        <Route path="/dashboard" component={ProtectedDashboardPage} />
+        <Route path="/detailed-calculator" component={ProtectedDetailedCalculatorPage} />
+        <Route path="/secure-management-portal" component={SecureManagementPortal} />
+        <Route path="/secure-cms-dashboard" component={ProtectedCMSDashboard} />
+        
+        {/* Admin routes */}
+        <Route path="/cms-dashboard" component={ProtectedBlogPostsAdmin} />
+        <Route path="/practice-listings-admin" component={ProtectedPracticeListingsAdmin} />
+        <Route path="/marketplace-admin" component={ProtectedMarketplaceAdmin} />
+        <Route path="/firm-profiles-admin" component={ProtectedFirmProfilesAdmin} />
+        <Route path="/pages-admin" component={ProtectedWebsitePagesAdmin} />
+        <Route path="/user-management" component={ProtectedUserManagementAdmin} />
+        <Route path="/admin-settings" component={ProtectedAdminSettings} />
+        
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ThemeProvider>
+          <AdvisorInfoProvider>
+            <Router />
+            <ScrollToTop />
+            <Toaster />
+          </AdvisorInfoProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
+
+export default App;

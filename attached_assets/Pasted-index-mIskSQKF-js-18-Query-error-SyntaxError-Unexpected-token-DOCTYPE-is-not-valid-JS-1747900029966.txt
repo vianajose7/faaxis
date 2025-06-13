@@ -1,0 +1,339 @@
+index-mIskSQKF.js:18 Query error: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+console.error @ index-mIskSQKF.js:18
+(anonymous) @ index-mIskSQKF.js:368
+await in (anonymous)
+queryFn @ index-mIskSQKF.js:368
+s @ index-mIskSQKF.js:368
+y @ index-mIskSQKF.js:368
+start @ index-mIskSQKF.js:368
+fetch @ index-mIskSQKF.js:368
+Nc @ index-mIskSQKF.js:368
+onSubscribe @ index-mIskSQKF.js:368
+subscribe @ index-mIskSQKF.js:368
+(anonymous) @ index-mIskSQKF.js:368
+nk @ index-mIskSQKF.js:39
+tm @ index-mIskSQKF.js:41
+$a @ index-mIskSQKF.js:41
+Q1 @ index-mIskSQKF.js:41
+eo @ index-mIskSQKF.js:39
+QI @ index-mIskSQKF.js:41
+fo @ index-mIskSQKF.js:41
+Mk @ index-mIskSQKF.js:41
+N @ index-mIskSQKF.js:26
+C @ index-mIskSQKF.js:26Understand this error
+index-mIskSQKF.js:18 Query error: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+console.error @ index-mIskSQKF.js:18
+(anonymous) @ index-mIskSQKF.js:368
+await in (anonymous)
+queryFn @ index-mIskSQKF.js:368
+s @ index-mIskSQKF.js:368
+y @ index-mIskSQKF.js:368
+(anonymous) @ index-mIskSQKF.js:368
+Promise.then
+(anonymous) @ index-mIskSQKF.js:368
+Promise.catch
+y @ index-mIskSQKF.js:368
+start @ index-mIskSQKF.js:368
+fetch @ index-mIskSQKF.js:368
+Nc @ index-mIskSQKF.js:368
+onSubscribe @ index-mIskSQKF.js:368
+subscribe @ index-mIskSQKF.js:368
+(anonymous) @ index-mIskSQKF.js:368
+nk @ index-mIskSQKF.js:39
+tm @ index-mIskSQKF.js:41
+$a @ index-mIskSQKF.js:41
+Q1 @ index-mIskSQKF.js:41
+eo @ index-mIskSQKF.js:39
+QI @ index-mIskSQKF.js:41
+fo @ index-mIskSQKF.js:41
+Mk @ index-mIskSQKF.js:41
+N @ index-mIskSQKF.js:26
+C @ index-mIskSQKF.js:26Understand this error
+index-mIskSQKF.js:18 AuthPage component rendered
+2index-mIskSQKF.js:18 AuthPage component rendered
+index-mIskSQKF.js:18 AuthPage component rendered
+index-mIskSQKF.js:368 
+            
+            
+           POST https://faaxis.com/api/login 404 (Not Found)
+mutationFn @ index-mIskSQKF.js:368
+fn @ index-mIskSQKF.js:368
+y @ index-mIskSQKF.js:368
+start @ index-mIskSQKF.js:368
+execute @ index-mIskSQKF.js:368
+await in execute
+mutate @ index-mIskSQKF.js:368
+w @ index-mIskSQKF.js:387
+g4 @ index-mIskSQKF.js:38
+y4 @ index-mIskSQKF.js:38
+x4 @ index-mIskSQKF.js:38
+w1 @ index-mIskSQKF.js:38
+$E @ index-mIskSQKF.js:38
+(anonymous) @ index-mIskSQKF.js:38
+Fx @ index-mIskSQKF.js:41
+uE @ index-mIskSQKF.js:38
+Rp @ index-mIskSQKF.js:38
+fx @ index-mIskSQKF.js:38
+D4 @ index-mIskSQKF.js:38Understand this error
+index-mIskSQKF.js:18 AuthPage component rendered
+index-mIskSQKF.js:368 
+            
+            
+           POST https://faaxis.com/api/login 404 (Not Found)
+mutationFn @ index-mIskSQKF.js:368
+fn @ index-mIskSQKF.js:368
+y @ index-mIskSQKF.js:368
+(anonymous) @ index-mIskSQKF.js:368
+Promise.then
+(anonymous) @ index-mIskSQKF.js:368
+Promise.catch
+y @ index-mIskSQKF.js:368
+start @ index-mIskSQKF.js:368
+execute @ index-mIskSQKF.js:368
+await in execute
+mutate @ index-mIskSQKF.js:368
+w @ index-mIskSQKF.js:387
+g4 @ index-mIskSQKF.js:38
+y4 @ index-mIskSQKF.js:38
+x4 @ index-mIskSQKF.js:38
+w1 @ index-mIskSQKF.js:38
+$E @ index-mIskSQKF.js:38
+(anonymous) @ index-mIskSQKF.js:38
+Fx @ index-mIskSQKF.js:41
+uE @ index-mIskSQKF.js:38
+Rp @ index-mIskSQKF.js:38
+fx @ index-mIskSQKF.js:38
+D4 @ index-mIskSQKF.js:38Understand this error
+index-mIskSQKF.js:18 AuthPage component rendered
+index-mIskSQKF.js:18 AuthPage component rendered
+index-mIskSQKF.js:18 AuthPage component rendered
+index-mIskSQKF.js:18 AuthPage component rendered
+3index-mIskSQKF.js:18 AuthPage component rendered
+index-mIskSQKF.js:18 📝 Register form submitted with data: {username: 'jhoncto@gmail.com', firstName: 'Md', lastName: 'jhon', hasPassword: true, hasPhone: false}
+index-mIskSQKF.js:18 🔄 Attempting to register via direct fetch to debug 404 issue
+index-mIskSQKF.js:18 🔄 Trying JWT registration endpoint at /api/jwt/register
+index-mIskSQKF.js:387 
+            
+            
+           POST https://faaxis.com/api/jwt/register 404 (Not Found)
+b @ index-mIskSQKF.js:387
+g4 @ index-mIskSQKF.js:38
+y4 @ index-mIskSQKF.js:38
+x4 @ index-mIskSQKF.js:38
+w1 @ index-mIskSQKF.js:38
+$E @ index-mIskSQKF.js:38
+(anonymous) @ index-mIskSQKF.js:38
+Fx @ index-mIskSQKF.js:41
+uE @ index-mIskSQKF.js:38
+Rp @ index-mIskSQKF.js:38
+fx @ index-mIskSQKF.js:38
+D4 @ index-mIskSQKF.js:38Understand this error
+index-mIskSQKF.js:18 📥 Direct registration API response: {status: 404, statusText: '', ok: false}
+index-mIskSQKF.js:18 ❌ JWT registration failed, trying standard endpoint as fallback
+index-mIskSQKF.js:18 JWT registration error response text: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /api/jwt/register</pre>
+</body>
+</html>
+
+index-mIskSQKF.js:18 🔄 Trying standard registration endpoint at /api/register
+index-mIskSQKF.js:387 
+            
+            
+           POST https://faaxis.com/api/register 404 (Not Found)
+b @ index-mIskSQKF.js:387
+await in b
+g4 @ index-mIskSQKF.js:38
+y4 @ index-mIskSQKF.js:38
+x4 @ index-mIskSQKF.js:38
+w1 @ index-mIskSQKF.js:38
+$E @ index-mIskSQKF.js:38
+(anonymous) @ index-mIskSQKF.js:38
+Fx @ index-mIskSQKF.js:41
+uE @ index-mIskSQKF.js:38
+Rp @ index-mIskSQKF.js:38
+fx @ index-mIskSQKF.js:38
+D4 @ index-mIskSQKF.js:38Understand this error
+index-mIskSQKF.js:18 📥 Standard registration API response: {status: 404, statusText: '', ok: false}
+index-mIskSQKF.js:18 ❌ Both registration endpoints failed
+index-mIskSQKF.js:18 Standard registration error response text: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /api/register</pre>
+</body>
+</html>
+
+index-mIskSQKF.js:18 🔶 Starting registration mutation with data: {username: 'jhoncto@gmail.com', hasPassword: true, fields: Array(5)}
+index-mIskSQKF.js:18 🔄 Sending registration API request to JWT endpoint
+index-mIskSQKF.js:18 AuthPage component rendered
+index-mIskSQKF.js:368 
+            
+            
+           POST https://faaxis.com/api/jwt/register 404 (Not Found)
+bu @ index-mIskSQKF.js:368
+mutationFn @ index-mIskSQKF.js:368
+fn @ index-mIskSQKF.js:368
+y @ index-mIskSQKF.js:368
+start @ index-mIskSQKF.js:368
+execute @ index-mIskSQKF.js:368
+await in execute
+mutate @ index-mIskSQKF.js:368
+b @ index-mIskSQKF.js:387
+await in b
+g4 @ index-mIskSQKF.js:38
+y4 @ index-mIskSQKF.js:38
+x4 @ index-mIskSQKF.js:38
+w1 @ index-mIskSQKF.js:38
+$E @ index-mIskSQKF.js:38
+(anonymous) @ index-mIskSQKF.js:38
+Fx @ index-mIskSQKF.js:41
+uE @ index-mIskSQKF.js:38
+Rp @ index-mIskSQKF.js:38
+fx @ index-mIskSQKF.js:38
+D4 @ index-mIskSQKF.js:38Understand this error
+index-mIskSQKF.js:18 ❌ Registration error caught: Error: 404: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /api/jwt/register</pre>
+</body>
+</html>
+
+    at P$ (index-mIskSQKF.js:368:45751)
+    at async bu (index-mIskSQKF.js:368:46736)
+    at async Object.mutationFn (index-mIskSQKF.js:368:50366)
+console.error @ index-mIskSQKF.js:18
+mutationFn @ index-mIskSQKF.js:368
+await in mutationFn
+fn @ index-mIskSQKF.js:368
+y @ index-mIskSQKF.js:368
+start @ index-mIskSQKF.js:368
+execute @ index-mIskSQKF.js:368
+await in execute
+mutate @ index-mIskSQKF.js:368
+b @ index-mIskSQKF.js:387
+await in b
+g4 @ index-mIskSQKF.js:38
+y4 @ index-mIskSQKF.js:38
+x4 @ index-mIskSQKF.js:38
+w1 @ index-mIskSQKF.js:38
+$E @ index-mIskSQKF.js:38
+(anonymous) @ index-mIskSQKF.js:38
+Fx @ index-mIskSQKF.js:41
+uE @ index-mIskSQKF.js:38
+Rp @ index-mIskSQKF.js:38
+fx @ index-mIskSQKF.js:38
+D4 @ index-mIskSQKF.js:38Understand this error
+index-mIskSQKF.js:18 AuthPage component rendered
+index-mIskSQKF.js:18 🔶 Starting registration mutation with data: {username: 'jhoncto@gmail.com', hasPassword: true, fields: Array(5)}
+index-mIskSQKF.js:18 🔄 Sending registration API request to JWT endpoint
+index-mIskSQKF.js:368 
+            
+            
+           POST https://faaxis.com/api/jwt/register 404 (Not Found)
+bu @ index-mIskSQKF.js:368
+mutationFn @ index-mIskSQKF.js:368
+fn @ index-mIskSQKF.js:368
+y @ index-mIskSQKF.js:368
+(anonymous) @ index-mIskSQKF.js:368
+Promise.then
+(anonymous) @ index-mIskSQKF.js:368
+Promise.catch
+y @ index-mIskSQKF.js:368
+start @ index-mIskSQKF.js:368
+execute @ index-mIskSQKF.js:368
+await in execute
+mutate @ index-mIskSQKF.js:368
+b @ index-mIskSQKF.js:387
+await in b
+g4 @ index-mIskSQKF.js:38
+y4 @ index-mIskSQKF.js:38
+x4 @ index-mIskSQKF.js:38
+w1 @ index-mIskSQKF.js:38
+$E @ index-mIskSQKF.js:38
+(anonymous) @ index-mIskSQKF.js:38
+Fx @ index-mIskSQKF.js:41
+uE @ index-mIskSQKF.js:38
+Rp @ index-mIskSQKF.js:38
+fx @ index-mIskSQKF.js:38
+D4 @ index-mIskSQKF.js:38Understand this error
+index-mIskSQKF.js:18 ❌ Registration error caught: Error: 404: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /api/jwt/register</pre>
+</body>
+</html>
+
+    at P$ (index-mIskSQKF.js:368:45751)
+    at async bu (index-mIskSQKF.js:368:46736)
+    at async Object.mutationFn (index-mIskSQKF.js:368:50366)
+console.error @ index-mIskSQKF.js:18
+mutationFn @ index-mIskSQKF.js:368
+await in mutationFn
+fn @ index-mIskSQKF.js:368
+y @ index-mIskSQKF.js:368
+(anonymous) @ index-mIskSQKF.js:368
+Promise.then
+(anonymous) @ index-mIskSQKF.js:368
+Promise.catch
+y @ index-mIskSQKF.js:368
+start @ index-mIskSQKF.js:368
+execute @ index-mIskSQKF.js:368
+await in execute
+mutate @ index-mIskSQKF.js:368
+b @ index-mIskSQKF.js:387
+await in b
+g4 @ index-mIskSQKF.js:38
+y4 @ index-mIskSQKF.js:38
+x4 @ index-mIskSQKF.js:38
+w1 @ index-mIskSQKF.js:38
+$E @ index-mIskSQKF.js:38
+(anonymous) @ index-mIskSQKF.js:38
+Fx @ index-mIskSQKF.js:41
+uE @ index-mIskSQKF.js:38
+Rp @ index-mIskSQKF.js:38
+fx @ index-mIskSQKF.js:38
+D4 @ index-mIskSQKF.js:38Understand this error
+index-mIskSQKF.js:18 ❌ Registration error: Error: 404: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /api/jwt/register</pre>
+</body>
+</html>
+
+    at Object.mutationFn (index-mIskSQKF.js:368:52457)
+console.error @ index-mIskSQKF.js:18
+b @ index-mIskSQKF.js:387
+await in b
+g4 @ index-mIskSQKF.js:38
+y4 @ index-mIskSQKF.js:38
+x4 @ index-mIskSQKF.js:38
+w1 @ index-mIskSQKF.js:38
+$E @ index-mIskSQKF.js:38
+(anonymous) @ index-mIskSQKF.js:38
+Fx @ index-mIskSQKF.js:41
+uE @ index-mIskSQKF.js:38
+Rp @ index-mIskSQKF.js:38
+fx @ index-mIskSQKF.js:38
+D4 @ index-mIskSQKF.js:38Understand this error
+2index-mIskSQKF.js:18 AuthPage component rendered

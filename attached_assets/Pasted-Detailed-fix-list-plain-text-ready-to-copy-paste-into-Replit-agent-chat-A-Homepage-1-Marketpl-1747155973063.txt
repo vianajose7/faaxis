@@ -1,0 +1,87 @@
+Detailed fix list – plain text, ready to copy‑paste into Replit agent chat
+
+A. Homepage
+	1.	Marketplace carousel shows only 4 cards and stops
+• client/src/components/MarketplaceCarousel.tsx
+– set VISIBLE (or slidesToShow) to 10
+– enable looping/autoplay: loop:true and Autoplay({ delay:2000 })
+	2.	News & Insights says “Unable to load content”
+• server/api-routes/news.ts (or the file that serves /api/news)
+– wrap DB fetch in try/catch; if it fails call newsRepository.initializeArticlesIfNeeded(3) and return at least []
+	3.	“Get Started for Free” (bottom CTA) does nothing
+• client/src/pages/Home.tsx – bottom button
+– onClick: navigate('/create-account')
+
+B. Navigation / common pages
+4. Add Back button to Checkout & Login
+• client/src/pages/Checkout.tsx and Login.tsx
+– insert <Link to="/" className="text-sm text-muted-foreground hover:underline">&larr; Back</Link> at top
+
+C. Calculator
+5. Current Firm dropdown only shows “Other”
+• client/src/components/Calculator/CurrentFirmSelect.tsx
+– import the same firm list used by compare‑firm select (shared/firmList.ts) and map over it
+	6.	Backend‑breakdown readability
+• client/src/components/Calculator/BackendBreakdown.tsx
+– use darker text: text-gray-800 dark:text-gray-200
+– add row striping with i % 2 ? 'bg-gray-50 dark:bg-gray-800' : ''
+
+D. Payments
+7. Stripe “service unavailable”
+– add STRIPE_SECRET_KEY in Deployment → Secrets
+– verify Stripe webhook URL is https://www.faaxis.com/api/stripe-webhook
+
+E. Placeholders & forms
+8. Swap email / name placeholders to finance‑flavoured examples
+• client/src/components/ui/FormField.tsx (shared input)
+– if field name is email → placeholder warren.b@valueinvesting.com
+– if name → placeholder Jordan Belfort
+	9.	Submit‑a‑Firm form improvements
+• client/src/pages/SubmitFirm.tsx
+– make website required
+– add inputs: totalDeal, upfrontDeal, notes, cellPhone, checkbox “OK to call?”
+– submit directly to /api/submit-firm (remove paywall redirect)
+
+F. Growth Marketing page
+10. “Schedule consultation” link broken
+• client/src/pages/Marketing.tsx
+– href https://calendly.com/faaxis/30min
+	11.	Marketing package “Get Started” → checkout
+• same file – onClick navigate to /checkout?plan=marketing-basic
+	12.	Add three case‑study pages and link
+• create client/src/pages/case-studies/google-ads.tsx, social-media.tsx, content.tsx (simple markdown)
+• update Marketing.tsx cards to link to them
+
+G. Blog / news section
+13. Blog index returns “error”
+• client/src/pages/Blog.tsx – fetch /api/news, add loading + empty fallbacks instead of throwing error
+
+H. About page heading
+14. H1 mis‑aligned
+• client/src/pages/About.tsx – wrap heading in div className="mx-auto max-w-3xl text-center"
+
+I. Firm profiles grid
+15. Only 8 profiles shown, need 16
+• server/api-routes/firm-profiles.ts – change default limit to 16
+• client/src/pages/Profiles.tsx – remove .slice(0,8)
+
+Environment / deployment
+– Delete or disable Run Dev Server workflow that launches tsx server/index.ts
+– Keep deployment using:
+Build command npm ci && npm run build
+Run command node production-deployment.js
+– production‑deployment.js should read port from process.env.PORT || 5000 (already done)
+– Make sure secrets: STRIPE_SECRET_KEY, OPENAI_API_KEY, AIRTABLE_API_KEY
+
+Commit order (suggested)
+	1.	fix carousel + news fallback
+	2.	nav back buttons + CTA link
+	3.	calculator fixes
+	4.	payments secret check
+	5.	placeholders update
+	6.	submit‑firm overhaul
+	7.	marketing links + case studies
+	8.	blog fetch fix
+	9.	layout tweaks (about, profiles)
+
+Deploy after push – port conflict will vanish once dev workflow is disabled.

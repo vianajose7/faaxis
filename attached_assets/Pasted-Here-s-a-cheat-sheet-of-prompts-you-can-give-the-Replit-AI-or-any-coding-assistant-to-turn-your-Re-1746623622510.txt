@@ -1,0 +1,49 @@
+Here’s a cheat-sheet of prompts you can give the Replit AI (or any coding assistant) to turn your React/Vite app into an SEO powerhouse around keywords like “advisor deals,” “advisor transitions,” “what X firm is paying advisors,” etc.:
+
+⸻
+
+1. Automate Meta-tag & Open Graph Generation
+
+✍️ “Add React Helmet (or similar) to every page and dynamically set the <title>, <meta name="description">, <meta name="keywords"> and Open Graph tags based on route parameters (e.g. firm name, deal type) so each URL has unique, highly-optimized SEO metadata.”
+
+2. Generate & Serve a sitemap.xml & robots.txt
+
+✍️ “Create a build-time script (or Express route) that scans all our routes (including dynamic firm pages) and spits out a sitemap.xml listing each URL with <lastmod> and <priority>. Also generate a robots.txt that points to it.”
+
+3. Implement JSON-LD Structured Data
+
+✍️ “Embed JSON-LD schema on listing and blog pages for Article, FAQPage, BreadcrumbList, and Organization. Populate fields like headline, datePublished, author, and for firm pages include JobPosting or Product markup showing advisor compensation data.”
+
+4. Pre-render or Server-Side Render Key Pages
+
+✍️ “Configure our Vite setup (or add a lightweight SSR layer) so that firm-specific landing pages (e.g. /firms/:firmSlug) and Blog/FAQ pages are pre-rendered at build time with their full HTML content, not just a JS bundle, to ensure search engines see the text immediately.”
+
+5. Optimize Content & URL Structure
+
+✍️ “Audit and refactor our URL patterns to be fully semantic (e.g. /advisor-transitions/:firm-name, /advisor-deals/:year). Add human-readable slugs and ensure every page has a clear H1 and H2 hierarchy that includes our primary keywords.”
+
+6. Add Canonical & Pagination Tags
+
+✍️ “On list pages (e.g. practice listings, blog archives), inject <link rel="canonical"> and <link rel="next">/<link rel="prev"> to consolidate duplicate content and guide crawlers through paginated results.”
+
+7. Automate Image SEO
+
+✍️ “Make a build-step that optimizes all images (compress, generate WebP, add appropriate alt text including target keywords) and injects <picture> tags for responsive loading.”
+
+8. Performance & Lighthouse Audit Hooks
+
+✍️ “Integrate a nightly Lighthouse audit into our CI — if performance/SEO score drops below 90, fail the build. Automatically apply minification, preconnect to Google APIs, defer non-critical JS, and inline critical CSS.”
+
+⸻
+
+How to use these prompts: copy-and-paste each into your Replit AI chat and ask it to implement the feature in your codebase. Once you’ve covered all eight areas, you’ll have:
+	•	Unique, keyword-rich meta & OG tags
+	•	A live sitemap.xml & robots.txt
+	•	Rich JSON-LD structured data
+	•	Pre-rendered content for crawlers
+	•	Perfectly semantic URLs & headings
+	•	Canonicalization & pagination controls
+	•	Fully optimized, keyword-tagged images
+	•	Continuous performance & SEO guards
+
+That combination will put you miles ahead in Google for searches like “What firm is paying advisors 2025,” “advisor transition deals,” and related long-tails.

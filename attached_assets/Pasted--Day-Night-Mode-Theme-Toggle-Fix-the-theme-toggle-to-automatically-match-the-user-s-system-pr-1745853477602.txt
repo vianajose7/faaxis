@@ -1,0 +1,82 @@
+🌗 Day/Night Mode (Theme Toggle)
+	•	Fix the theme toggle to automatically match the user’s system preferences (dark/light mode).
+	•	Allow user manual override if they want to switch modes after system default is applied.
+
+⸻
+
+🏠 Homepage
+
+🔥 Practice Marketplace Section (3rd Section)
+	•	Enable horizontal scrolling of practice cards.
+	•	Should auto-scroll every 1 second OR allow manual arrow navigation left/right.
+	•	Remove the blank space seen after 4 cards — it should feel continuous.
+	•	Fix “View Details” buttons:
+	•	Clicking View Details currently does not load — it must deep-link into the specific listing’s detail page.
+	•	Fix “Explore All Listings” button:
+	•	Currently does not load — route to the full practice listings page.
+	•	Fix hover style on “Explore All Listings”:
+	•	In day mode, hovering makes the text white on a light background → unreadable.
+	•	Set proper hover contrast (either dark text on light hover or darker hover background).
+
+⸻
+
+📰 Latest Industry News Section
+	•	Fix “Read Full Story” buttons:
+	•	Clicking currently forever loads — must route properly to the news article page.
+	•	Fix “Browse All News” button:
+	•	Same hover issue as above: white text on light background → unreadable.
+	•	Also forever loading when clicked — fix routing.
+
+⸻
+
+📚 Advisor Insights Blog Section
+	•	Rename section:
+	•	Change label from “Advisor Insights Blog” ➔ “Advisor Insights” (remove “Blog”).
+	•	Fix article links:
+	•	Clicking on any blog posts forever loads — correct routing to blog articles.
+	•	Same hover issue on blog “Read Full Story” or “Browse All” buttons — fix hover states for readability.
+
+⸻
+
+✍️ Sitewide Text Spacing
+	•	Increase left and right padding on ALL text blocks across the entire site:
+	•	Content feels crammed.
+	•	Add generous internal margins (~5–8% of screen width on both sides).
+	•	Apply to:
+	•	Homepage sections
+	•	Headers
+	•	Footers
+	•	Login/register pages
+	•	Calculator pages
+
+⸻
+
+🔢 Calculate Value / Deal Calculator Page
+	•	Fix load issues:
+	•	Currently, clicking on “Calculate Value” loads indefinitely — fix backend logic or page routing.
+	•	Confirm that form + calculator logic initializes properly on page load.
+
+⸻
+
+🔐 Login Page
+	•	Fix padding/margin on login form:
+	•	Text/input fields are too far left and feel unbalanced.
+	•	Center the form elements better.
+	•	Fix login behavior:
+	•	After pressing login:
+	•	Currently freezes on “Logging in…” without redirect or error.
+	•	Fix success handling (should redirect to user dashboard).
+	•	Fix error handling (should display login error message if login fails).
+
+⸻
+
+🔥 Prioritization Suggestions
+	1.	Top Priority (Critical Path)
+	•	Fix all non-working links (Practice Listings, News, Advisor Insights).
+	•	Fix hover state issues on all CTA buttons.
+	•	Fix login freeze and redirect bug.
+	2.	High Priority
+	•	Implement system-based dark/light mode detection.
+	•	Adjust text margins sitewide.
+	3.	Medium Priority
+	•	Enable horizontal scrolling for Practice Marketplace and Industry News sections.

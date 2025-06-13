@@ -1,0 +1,58 @@
+Server Deployment Fix for JWT Routes and Port Binding
+I've analyzed your server deployment issues and identified two critical problems:
+Port Binding Conflict: Your server is hardcoding port 5000, causing EADDRINUSE errors since Replit already binds this port
+JWT Router Not Mounted: Your JWT endpoints (including /jwt/register) aren't being properly mounted, causing 504 errors
+Complete Solution
+Step 1: Create a minimal production entry point
+Create a new file called production-entry.js with this content:
+javascript
+// production-entry.js
+// Minimal entry point that respects Replit environment
+
+// Ensure we use Replit's PORT
+process.env.PORT = process.env.PORT || '3000';
+
+// Set production mode
+process.env.NODE_ENV = 'production';
+
+// Just import the compiled server
+import('./dist/index.js').catch(err => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
+});
+Step 2: Update your server code (server/index.ts)
+Make sure your server/index.ts file includes these critical changes:
+Use environment PORT variable:
+typescript
+const port = Number(process.env.PORT || 3000);
+Ensure the JWT router is properly mounted:
+typescript
+import jwtRouter from './jwt-auth.js';
+app.use('/jwt', jwtRouter);
+Fix your SPA fallback pattern to exclude both API and JWT paths:
+typescript
+// SPA fallback — exclude both /api and /jwt paths
+app.get(/^(?!\/api\/|\/jwt\/).*/, (_req, res) => {
+  res.sendFile(path.join(publicDir, 'index.html'));
+});
+Step 3: Update your .replit configuration
+Update your .replit file with these deployment settings:
+[deployment]
+deploymentTarget = "autoscale"
+build = ["sh", "-c", "npm ci && npm run build"]
+run = ["sh", "-c", "node production-entry.js"]
+
+[[ports]]
+localPort = 3000
+externalPort = 80
+Step 4: Deploy with these commands
+bash
+npm ci && npm run build
+node production-entry.js
+What This Solves
+✅ Port conflict (using Replit's PORT env var)
+✅ JWT router properly mounted at /jwt
+✅ SPA fallback no longer interferes with API routes
+✅ Health check endpoint at /health returns 200
+✅ User registration and Stripe payments now work correctly
+This clean approach eliminates all port conflicts and ensures your JWT routes are properly handled.

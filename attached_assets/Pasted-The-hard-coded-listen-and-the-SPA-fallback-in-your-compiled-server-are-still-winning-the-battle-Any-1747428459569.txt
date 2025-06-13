@@ -1,0 +1,67 @@
+The hard-coded listen and the SPA fallback in your compiled server are still winning the battle. Any wrapper or entry-point you layer on top will be fighting them every time. You have to fix your dist/index.js (the output of server/index.ts) so that it:
+	1.	Listens on the right port by reading process.env.PORT
+	2.	Mounts both your /api and /jwt routers before you ever do a “catch-all” fallback
+	3.	Only falls back to index.html for truly unhandled (non-API, non-JWT) paths
+
+Here’s exactly what to change in your source server/index.ts (not in some wrapper):
+
+⸻
+
+1) Respect the environment port
+
+Find wherever you do:
+
+const PORT = 5000;
+server.listen(PORT, () => console.log(`Listening on ${PORT}`));
+
+Replace it with:
+
+const PORT = Number(process.env.PORT) || 5000;
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Server listening on port ${PORT}`);
+});
+
+That ensures your build will never hard-bind to 5000 if Replit (or anywhere else) gives you a different port.
+
+⸻
+
+2) Mount /jwt before the SPA fallback
+
+Somewhere near the bottom you probably have:
+
+// AFTER all routers:
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'dist/public/index.html'));
+});
+
+You need to turn that into:
+
+// After your app.use('/api', ...) and app.use('/jwt', ...) calls:
+app.get(/^(?!\/api\/|\/jwt\/).*/, (_req, res) => {
+  res.sendFile(path.join(__dirname, 'dist/public/index.html'));
+});
+
+That regex says “only catch paths that do not start with /api/ or /jwt/.”
+
+⸻
+
+3) Rebuild and deploy
+
+Once those two changes are in place, your minimal entry-point can be:
+
+// production-entry.js
+process.env.PORT = process.env.PORT || '3000';
+import('./dist/index.js');
+
+And in your .replit:
+
+[deployment]
+build = ["npm", "ci", "&&", "npm", "run", "build"]
+run   = ["node", "production-entry.js"]
+
+With that:
+	•	No more EADDRINUSE (you’ll only ever bind once, to the port Replit wants)
+	•	No more /jwt/register returning HTML (the SPA fallback won’t catch it)
+	•	No more bandaids or monkey-patches
+
+This is the one and only change set that truly cures the underlying issues. Give that a try and your next deploy will sail right through.

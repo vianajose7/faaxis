@@ -1,0 +1,84 @@
+Your greps prove the point:
+	•	You do have an async function registerRoutes(app2) in dist/index.js…
+	•	But you do not have an export { registerRoutes } in that file, so import { registerRoutes } from './dist/index.js' will always fail.
+
+⸻
+
+What actually needs to happen
+	1.	Produce a standalone bundle for your route-registration module that does export registerRoutes
+	2.	Point your deployment script at that bundle instead of at dist/index.js
+
+⸻
+
+1) Change your build step to include server/routes.ts (and routes-transition.ts)
+
+In your package.json, modify the build script from this:
+
+"build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist"
+
+to something like this:
+
+"build": "vite build && \ 
+- esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist"
++ esbuild \
++   server/index.ts \
++   server/routes.ts \
++   server/routes-transition.ts \
++   --platform=node \
++   --packages=external \
++   --bundle \
++   --format=esm \
++   --outdir=dist
+
+This will emit:
+
+dist/index.js                  ← your self-starting server (no exports)
+dist/server/routes.js          ← bundled routes.ts with `export async function registerRoutes…`
+dist/server/routes-transition.js
+
+
+⸻
+
+2) Patch production-deployment.js to import from the new bundle
+
+Open production-deployment.js and replace your dynamic-import logic with:
+
+// …earlier setup…
+
+const startServer = async () => {
+  try {
+    // pull in the named export from our new routes bundle
+    const { registerRoutes } = await import('./dist/server/routes.js');
+    await registerRoutes(app);
+
+    // if you have a separate transition module:
+    const { registerTransitionRoutes } = await import('./dist/server/routes-transition.js');
+    await registerTransitionRoutes(app);
+
+    // then start listening
+    app.listen(PORT, () => console.log(`✔️  Server listening on ${PORT}`));
+  } catch (err) {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  }
+};
+
+
+⸻
+
+3) Rebuild and redeploy
+
+Now, from your project root:
+
+npm ci
+npm run build
+node production-deployment.js
+
+	•	npm run build will:
+	1.	build your client into dist/public
+	2.	bundle three entrypoints (index.ts, routes.ts, routes-transition.ts) into dist/
+	•	node production-deployment.js will now successfully import { registerRoutes } from dist/server/routes.js.
+
+⸻
+
+That will eliminate the “does not provide an export named registerRoutes” error once and for all. Let me know how that goes!

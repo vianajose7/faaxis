@@ -1,0 +1,182 @@
+SAME FUCKING ISSUE!!!! 
+
+REPLIT: Perfect! I've found the exact solution to your deployment issue from the screenshots you shared.
+
+✓ Created QUICK_FIX.md with precise instructions based on Replit's recommendations
+✓ Updated the deploy-fixed.sh script to use npm ci and npm run start
+✓ Both solutions follow exactly what Replit suggests for TypeScript projects
+
+According to Replit, your deployment was trying to use tsx in production, but that tool is only available in development. Here's how to fix it:
+
+Go to Tools → Deployments → Edit Commands
+Set the Build Command to: npm ci && npm run build
+Set the Run Command to: npm run start
+Click Redeploy
+This follows exactly what Replit recommends for TypeScript projects like yours.
+
+ERROR LOG: 
+2025-05-08 15:03:35.75
+4e76983d
+User
+_keepAlive: false,
+2025-05-08 15:03:35.75
+4e76983d
+User
+_keepAliveInitialDelayMillis: 0,
+2025-05-08 15:03:35.75
+4e76983d
+User
+lastBuffer: false,
+2025-05-08 15:03:35.75
+4e76983d
+User
+parsedStatements: {},
+2025-05-08 15:03:35.75
+4e76983d
+User
+ssl: false,
+2025-05-08 15:03:35.75
+4e76983d
+User
+_ending: true,
+2025-05-08 15:03:35.75
+4e76983d
+User
+_emitMessage: false,
+2025-05-08 15:03:35.75
+4e76983d
+User
+_connecting: true
+2025-05-08 15:03:35.75
+4e76983d
+User
+},
+2025-05-08 15:03:35.75
+4e76983d
+User
+queryQueue: [],
+2025-05-08 15:03:35.75
+4e76983d
+User
+binary: false,
+2025-05-08 15:03:35.75
+4e76983d
+User
+processID: -927131816,
+2025-05-08 15:03:35.75
+4e76983d
+User
+secretKey: 456432415,
+2025-05-08 15:03:35.75
+4e76983d
+User
+ssl: false,
+2025-05-08 15:03:35.75
+4e76983d
+User
+_connectionTimeoutMillis: 0,
+2025-05-08 15:03:35.75
+4e76983d
+User
+config: {
+2025-05-08 15:03:35.75
+4e76983d
+User
+connectionString: 'postgresql://neondb_owner:npg_kaJH0E5ZgRTQ@ep-weathered-wave-a4eareiq.us-east-1.aws.neon.tech/neondb?sslmode=require',
+2025-05-08 15:03:35.75
+4e76983d
+User
+max: 10,
+2025-05-08 15:03:35.75
+4e76983d
+User
+maxUses: Infinity,
+2025-05-08 15:03:35.75
+4e76983d
+User
+allowExitOnIdle: false,
+2025-05-08 15:03:35.75
+4e76983d
+User
+maxLifetimeSeconds: 0,
+2025-05-08 15:03:35.75
+4e76983d
+User
+idleTimeoutMillis: 10000
+2025-05-08 15:03:35.75
+4e76983d
+User
+},
+2025-05-08 15:03:35.75
+4e76983d
+User
+_connectionCallback: null,
+2025-05-08 15:03:35.75
+4e76983d
+User
+release: [Function (anonymous)],
+2025-05-08 15:03:35.75
+4e76983d
+User
+activeQuery: null,
+2025-05-08 15:03:35.75
+4e76983d
+User
+readyForQuery: true,
+2025-05-08 15:03:35.75
+4e76983d
+User
+hasExecuted: true,
+2025-05-08 15:03:35.75
+4e76983d
+User
+_poolUseCount: 1
+2025-05-08 15:03:35.75
+4e76983d
+User
+}
+2025-05-08 15:03:35.75
+4e76983d
+User
+}
+2025-05-08 15:03:35.75
+4e76983d
+User
+2025-05-08 15:03:35.75
+4e76983d
+User
+Node.js v20.18.1
+2025-05-08 15:03:40.85
+4e76983d
+System
+command finished with error [sh -c NODE_ENV=production tsx server/index.ts]: exit status 1
+2025-05-08 15:04:36.10
+5d436fdf
+User
+WARNING: Using fallback JWT secret in production - this is not recommended. Consider setting JWT_SECRET environment variable.
+2025-05-08 15:06:48.94
+4e76983d
+User
+WARNING: Using fallback JWT secret in production - this is not recommended. Consider setting JWT_SECRET environment variable.
+2025-05-08 15:50:57.41
+649dfbcf
+User
+WARNING: Using fallback JWT secret in production - this is not recommended. Consider setting JWT_SECRET environment variable.
+
+Wrap
+
+Colors
+Database connected
+15 tables
+63.65MB/10GB
+Schema	Name	Type	Owner	Size	Description
+public	activity_logs	table	neondb_owner	16 kB	
+public	activity_logs_id_seq	sequence	neondb_owner	8192 bytes	
+public	advisor_profiles	table	neondb_owner	16 kB	
+public	advisor_profiles_id_seq	sequence	neondb_owner	8192 bytes	
+public	advisor_transition_leads	table	neondb_owner	16 kB	
+New: Database Studio
+Click "See my data" to launch the new Database editor. Modify, query, and visualize your data in an easy-to-use interface.
+Docs
+Powered by
+

@@ -1,0 +1,1537 @@
+import { createRoot } from 'react-dom/client';
+import { Navbar } from "@/components/layout/navbar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Link } from "wouter";
+import { useEffect, useRef, useState, memo, lazy, Suspense } from "react";
+import CountUp from 'react-countup';
+import { motion } from "framer-motion";
+import { 
+  AlertTriangle,
+  BarChart2, 
+  ChevronLeft,
+  ChevronRight, 
+  DollarSign, 
+  TrendingUp, 
+  Users, 
+  Zap, 
+  Shield, 
+  LightbulbIcon,
+  UserPlus,
+  Store,
+  LineChart,
+  BookOpen,
+  ArrowRight,
+  Mail,
+  Briefcase,
+  PenTool,
+  Building,
+  Check,
+  CheckCircle,
+  Download,
+  Calendar,
+  Newspaper
+} from "lucide-react";
+import { Footer } from "@/components/layout/footer";
+import { Head } from "@/components/layout/head";
+import { useQuery } from "@tanstack/react-query";
+
+export default function HomePage() {
+  // Refs for various components
+  const marketplaceSliderRef = useRef<HTMLDivElement | null>(null);
+  const countUpRef = useRef<HTMLDivElement | null>(null);
+  const slidersRef = useRef<HTMLDivElement | null>(null);
+  
+  // State for news articles and blog posts
+  interface NewsArticle {
+    id: number;
+    title: string;
+    slug: string;
+    content: string;
+    excerpt: string;
+    date: string;
+    source: string;
+    category: string;
+    imageUrl?: string;
+  }
+  
+  interface BlogPost {
+    id: number;
+    title: string;
+    slug: string;
+    content: string;
+    excerpt: string;
+    date: string;
+    category: string;
+    imageUrl?: string;
+    published: boolean;
+  }
+  
+  const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
+  const [isLoadingNews, setIsLoadingNews] = useState(true);
+  const [newsError, setNewsError] = useState<string | null>(null);
+  
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [isLoadingBlog, setIsLoadingBlog] = useState(true);
+  const [blogError, setBlogError] = useState<string | null>(null);
+  
+  // Use React Query for optimized data fetching with caching
+  const {
+    data: newsData,
+    isLoading: isLoadingNewsQuery,
+    error: newsQueryError
+  } = useQuery({
+    queryKey: ['/api/news'],
+    queryFn: async () => {
+      // Using absolute path with credentials to ensure it works in production
+      const response = await fetch('/api/news', {
+        credentials: 'include', // Include cookies/auth if needed
+      });
+      console.log('News API response status:', response.status);
+      if (!response.ok) {
+        throw new Error('Failed to fetch news articles');
+      }
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    retry: 3, // Retry failed requests 3 times
+  });
+  
+  const {
+    data: blogData,
+    isLoading: isLoadingBlogQuery,
+    error: blogQueryError
+  } = useQuery({
+    queryKey: ['/api/blog/posts'],
+    queryFn: async () => {
+      // Using absolute path with credentials to ensure it works in production
+      const response = await fetch('/api/blog/posts', {
+        credentials: 'include', // Include cookies/auth if needed
+      });
+      console.log('Blog API response status:', response.status);
+      if (!response.ok) {
+        throw new Error('Failed to fetch blog posts');
+      }
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    retry: 3, // Retry failed requests 3 times
+  });
+  
+  // Update local state from React Query results
+  useEffect(() => {
+    if (newsData) {
+      setNewsArticles(newsData.newsArticles || []);
+      setIsLoadingNews(false);
+    }
+    if (newsQueryError) {
+      setNewsError(newsQueryError instanceof Error ? newsQueryError.message : 'Unknown error fetching news');
+      setIsLoadingNews(false);
+    }
+  }, [newsData, newsQueryError]);
+  
+  useEffect(() => {
+    if (blogData) {
+      setBlogPosts(blogData || []);
+      setIsLoadingBlog(false);
+    }
+    if (blogQueryError) {
+      setBlogError(blogQueryError instanceof Error ? blogQueryError.message : 'Unknown error fetching blog posts');
+      setIsLoadingBlog(false);
+    }
+  }, [blogData, blogQueryError]);
+  
+  // Completely new implementation using a simpler approach
+  useEffect(() => {
+    const slider = marketplaceSliderRef.current;
+    if (!slider) return;
+    
+    // Force scroll to be visible (debugging only)
+    slider.style.overflowX = 'scroll';
+    slider.style.scrollbarWidth = 'none';
+    // Apply webkit overflow scrolling with type assertion to avoid TypeScript errors
+    (slider.style as any)['-webkit-overflow-scrolling'] = 'touch';
+    slider.style.scrollBehavior = 'smooth';
+    
+    // Ensure cards are properly spaced
+    const cards = slider.querySelectorAll('.snap-start');
+    const cardCount = cards.length;
+    
+    if (cardCount === 0) {
+      console.error('No cards found in marketplace slider');
+      return;
+    }
+    
+    let currentIndex = 0;
+    let isPaused = false;
+    let animationInProgress = false;
+    
+    // Improved manual scroll function that uses absolute positions
+    const scrollToCard = (index: number) => {
+      if (!slider || animationInProgress) return;
+      
+      try {
+        animationInProgress = true;
+        
+        // Ensure index is within bounds
+        if (index >= cardCount) index = 0;
+        if (index < 0) index = cardCount - 1;
+        
+        currentIndex = index;
+        
+        // Calculate position - more reliable than using scrollBy
+        const card = cards[index] as HTMLElement;
+        const cardLeft = card.offsetLeft;
+        
+        // Use scrollTo for more reliable positioning
+        slider.scrollTo({
+          left: cardLeft,
+          behavior: 'smooth'
+        });
+        
+        console.log(`Scrolling to card ${index}, position: ${cardLeft}px`);
+        
+        // Add a visual indicator for currently visible card (optional)
+        cards.forEach((c, i) => {
+          if (i === index) {
+            c.classList.add('current-card');
+          } else {
+            c.classList.remove('current-card');
+          }
+        });
+        
+        // Reset animation flag after scroll completes
+        setTimeout(() => {
+          animationInProgress = false;
+        }, 600); // 600ms matches smooth scroll duration
+        
+      } catch (err) {
+        console.error('Error in marketplace scroll:', err);
+        animationInProgress = false;
+      }
+    };
+    
+    // Manual next/prev functions with animation lock
+    const scrollNext = () => {
+      if (animationInProgress) return;
+      scrollToCard(currentIndex + 1);
+    };
+    
+    const scrollPrev = () => {
+      if (animationInProgress) return;
+      scrollToCard(currentIndex - 1);
+    };
+    
+    // Initial scroll to first card with a delay
+    setTimeout(() => {
+      scrollToCard(0);
+    }, 500);
+    
+    // Set up auto-scrolling with interval for showing each card
+    const autoScrollInterval = setInterval(() => {
+      if (!isPaused && !animationInProgress) {
+        // Ensure we loop back to the beginning after reaching the end
+        const nextIndex = (currentIndex + 1) % cardCount;
+        scrollToCard(nextIndex);
+      }
+    }, 3000); // 3 seconds per card
+    
+    // Pause auto-scrolling on interaction
+    const handleMouseEnter = () => { isPaused = true; };
+    const handleMouseLeave = () => { isPaused = false; };
+    
+    // Enhanced touch events for mobile with better detection and responsiveness
+    let touchStartX = 0;
+    let touchStartY = 0; // Track vertical movement to avoid conflicts with page scrolling
+    
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches && e.touches.length > 0) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        isPaused = true;
+        
+        // Prevent default only if necessary - commented out to avoid interfering with normal scrolling
+        // e.preventDefault();
+      }
+    };
+    
+    const handleTouchMove = (e: TouchEvent) => {
+      // Add tracking during movement for more responsive feeling
+      if (e.touches && e.touches.length > 0) {
+        // Optional: can implement active dragging here if needed
+      }
+    };
+    
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (e.changedTouches && e.changedTouches.length > 0) {
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+        const touchDiffX = touchStartX - touchEndX;
+        const touchDiffY = touchStartY - touchEndY;
+        
+        // Only process horizontal swipes (avoid triggering on vertical scrolls)
+        if (Math.abs(touchDiffX) > Math.abs(touchDiffY) && Math.abs(touchDiffX) > 30) {
+          // Reduced threshold for better responsiveness (50 → 30)
+          if (touchDiffX > 0) {
+            scrollNext();
+            console.log("Swiped left - going to next card");
+          } else {
+            scrollPrev();
+            console.log("Swiped right - going to previous card");
+          }
+        }
+        
+        // Resume auto-scrolling after a longer delay for better user experience
+        setTimeout(() => {
+          isPaused = false;
+        }, 3000); // Increased from 1000ms to 3000ms
+      }
+    };
+    
+    // Handle manual navigation with buttons
+    const prevButton = document.querySelector('[aria-label="Previous listings"]');
+    const nextButton = document.querySelector('[aria-label="Next listings"]');
+    
+    if (prevButton) {
+      prevButton.addEventListener('click', () => {
+        scrollPrev();
+        isPaused = true;
+        setTimeout(() => { isPaused = false; }, 5000);
+      });
+    }
+    
+    if (nextButton) {
+      nextButton.addEventListener('click', () => {
+        scrollNext();
+        isPaused = true;
+        setTimeout(() => { isPaused = false; }, 5000);
+      });
+    }
+    
+    // Attach event listeners
+    slider.addEventListener('mouseenter', handleMouseEnter);
+    slider.addEventListener('mouseleave', handleMouseLeave);
+    slider.addEventListener('touchstart', handleTouchStart as EventListener);
+    slider.addEventListener('touchmove', handleTouchMove as EventListener);
+    slider.addEventListener('touchend', handleTouchEnd as EventListener);
+    
+    // Clean up
+    return () => {
+      clearInterval(autoScrollInterval);
+      slider.removeEventListener('mouseenter', handleMouseEnter);
+      slider.removeEventListener('mouseleave', handleMouseLeave);
+      slider.removeEventListener('touchstart', handleTouchStart as EventListener);
+      slider.removeEventListener('touchmove', handleTouchMove as EventListener);
+      slider.removeEventListener('touchend', handleTouchEnd as EventListener);
+      
+      if (prevButton) {
+        prevButton.removeEventListener('click', scrollPrev);
+      }
+      
+      if (nextButton) {
+        nextButton.removeEventListener('click', scrollNext);
+      }
+    };
+  }, []);
+  
+  // Set up CountUp animation with IntersectionObserver and safely handle mounting
+  useEffect(() => {
+    // Use a small delay to ensure DOM is ready
+    const initTimeout = setTimeout(() => {
+      const countUpElement = countUpRef.current;
+      if (!countUpElement) {
+        console.log('CountUp element not found in DOM');
+        return;
+      }
+      
+      try {
+        // Initially set a placeholder to prevent null ref errors
+        countUpElement.textContent = '$0+';
+        
+        const observer = new IntersectionObserver(
+          ([entry]) => {
+            if (entry.isIntersecting) {
+              try {
+                // Only create the CountUp when the element is actually visible
+                // This avoids the null target error
+                countUpElement.innerHTML = '';
+                const span = document.createElement('span');
+                countUpElement.appendChild(span);
+                
+                // Safe render with error handling
+                try {
+                  // Use direct DOM instead of React rendering to avoid hydration issues
+                  span.textContent = '$';
+                  // Safely use CountUp with a DOM element
+                  if (span) {
+                    // Convert to vanilla JavaScript to avoid type errors
+                    // We'll manage the animation in pure JS
+                    span.textContent = '$0';
+                    
+                    // Use setTimeout to simulate counting effect
+                    let currentValue = 0;
+                    const targetValue = 17000000000;
+                    const duration = 4000; // 4 seconds
+                    const interval = 50; // Update every 50ms
+                    const steps = duration / interval;
+                    const increment = targetValue / steps;
+                    
+                    const counter = setInterval(() => {
+                      currentValue += increment;
+                      if (currentValue >= targetValue) {
+                        currentValue = targetValue;
+                        clearInterval(counter);
+                        span.textContent = '$' + targetValue.toLocaleString() + '+';
+                      } else {
+                        span.textContent = '$' + Math.round(currentValue).toLocaleString();
+                      }
+                    }, interval);
+                    
+                    // Animation is handled by the setInterval above - no need for additional error handling
+                    console.log('CountUp animation started');
+                  }
+                  console.log('CountUp initialized successfully');
+                } catch (renderError) {
+                  console.error('Error with CountUp:', renderError);
+                  // Fallback to static content if initialization fails
+                  countUpElement.textContent = '$17,000,000,000+';
+                }
+                
+                observer.disconnect();
+              } catch (err) {
+                console.error('Error in CountUp intersection callback:', err);
+                countUpElement.textContent = '$17,000,000,000+';
+              }
+            }
+          },
+          { threshold: 0.1, rootMargin: '100px' }
+        );
+        
+        observer.observe(countUpElement);
+        
+        return () => {
+          observer.disconnect();
+        };
+      } catch (error) {
+        console.error('Error setting up CountUp observer:', error);
+      }
+    }, 500); // 500ms delay to ensure DOM is ready
+    
+    return () => clearTimeout(initTimeout);
+  }, []);
+  
+  // Set up sliders animation with IntersectionObserver
+  useEffect(() => {
+    const slidersElement = slidersRef.current;
+    if (!slidersElement) return;
+    
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          const sliders = slidersElement.querySelectorAll('.slider-fill, .slider-thumb');
+          sliders.forEach(slider => {
+            slider.classList.add('visible');
+          });
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    observer.observe(slidersElement);
+    
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  return (
+    <div className="min-h-screen flex flex-col bg-background transition-colors">
+      <Head 
+        title="Axis | Maximize Your Financial Advisor Compensation"
+        description="Calculate your true market value, compare recruiting packages across firms, and discover growth opportunities in the wealth management industry."
+        keywords="financial advisor, advisor compensation, wealth management, transition packages, recruiting deals, advisor calculator"
+      />
+      <Navbar />
+
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="relative py-8 md:py-16 overflow-hidden">
+          <div className="absolute inset-0 opacity-30 dark:opacity-20"></div>
+          
+
+          
+          <div className="relative container mx-auto px-8 md:px-16 lg:px-24 max-w-5xl z-10">
+            <div className="flex flex-col items-center text-center mb-6">
+              <h1 className="text-[clamp(40px,6vw,72px)] font-bold tracking-tight leading-tight mb-6 text-foreground animate-fade-in">
+                <span className="animate-soft-bounce inline-block">Your Next Move,</span><br/><span className="text-primary animate-soft-bounce inline-block">Simplified.</span>
+              </h1>
+
+              <h2 className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-fade-in animation-delay-200">
+                The only platform built to help advisors grow—through AI-powered acquisition, transition, and marketing.
+              </h2>
+
+              <div className="flex flex-col md:flex-row gap-4 justify-center animate-fade-in animation-delay-300">
+                <div
+                  onClick={() => { window.location.href = '/calculator'; }}
+                  className="cursor-pointer"
+                >
+                  <Button size="lg" className="font-medium px-8 py-6 text-lg bg-primary hover:bg-primary/90 shadow-[rgba(0,0,0,0.2)_0px_8px_24px] transition-all duration-300 rounded-full text-primary-foreground">
+                    <BarChart2 className="mr-2 h-5 w-5" />
+                    Calculate Your Value
+                    <ChevronRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Animated dropdown arrow */}
+              <div className="flex justify-center mt-16 animate-fade-in animation-delay-600">
+                <div className="animate-bounce-slow">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-primary">
+                    <path d="M12 5V19M12 19L19 12M12 19L5 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        {/* Transition Calculator Section - Apple-inspired design */}
+        <section className="py-12 md:py-16 dark:bg-card/50 bg-card/80 backdrop-blur-sm">
+          <div className="container mx-auto px-8 md:px-16 lg:px-24 max-w-5xl mobile-container-fix">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div className="order-2 lg:order-1">
+                <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground leading-tight">
+                  <span className="text-primary">AI-Powered Financial Intelligence</span><br/>
+                  That Works for You.
+                </h2>
+                <p className="text-xl text-muted-foreground mb-8 max-w-lg">
+                  Our AI engine analyzes your practice's unique profile and instantly generates tailored transition packages. From fee structures to product mix, our advanced algorithms transform your data into actionable compensation insights:
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 flex items-center justify-center h-5 w-5 mr-3">
+                      <Check className="h-5 w-5 text-primary" />
+                    </div>
+                    <p className="text-foreground font-medium">Upfront</p>
+                  </div>
+
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 flex items-center justify-center h-5 w-5 mr-3">
+                      <Check className="h-5 w-5 text-primary" />
+                    </div>
+                    <p className="text-foreground font-medium">Backends</p>
+                  </div>
+
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 flex items-center justify-center h-5 w-5 mr-3">
+                      <Check className="h-5 w-5 text-primary" />
+                    </div>
+                    <p className="text-foreground font-medium">Deferred comp</p>
+                  </div>
+
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 flex items-center justify-center h-5 w-5 mr-3">
+                      <Check className="h-5 w-5 text-primary" />
+                    </div>
+                    <p className="text-foreground font-medium">Comparative breakdown</p>
+                  </div>
+
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 flex items-center justify-center h-5 w-5 mr-3">
+                      <Check className="h-5 w-5 text-primary" />
+                    </div>
+                    <p className="text-foreground font-medium">Firm overview</p>
+                  </div>
+
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 flex items-center justify-center h-5 w-5 mr-3">
+                      <Check className="h-5 w-5 text-primary" />
+                    </div>
+                    <p className="text-foreground font-medium">Comp delta over x years</p>
+                  </div>
+                </div>
+
+                <p className="text-muted-foreground mt-4 mb-8">
+                  and everything in between — all in one place.
+                </p>
+
+                <div className="mt-8 mb-4">
+                  <div className="flex items-center">
+                    <div className="text-4xl font-bold text-primary" ref={countUpRef}>
+                      $0+
+                    </div>
+                  </div>
+                  <div className="text-lg font-medium text-foreground">
+                    FaAxis Supported AUM Transitioned
+                  </div>
+                </div>
+
+{/* Removed the Get Deal button as requested */}
+              </div>
+
+              <div className="order-1 lg:order-2 relative">
+                <div className="relative h-auto min-h-[700px] md:min-h-[680px] rounded-2xl overflow-hidden shadow-2xl">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 backdrop-blur-[2px]"></div>
+                  <div className="relative py-6 flex items-center justify-center">
+                    <div className="bg-white dark:bg-gray-900 p-2 sm:p-4 rounded-xl shadow-lg w-[98%] max-w-xl">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
+                        <div className="p-3 rounded-lg bg-gray-100 dark:bg-gray-800">
+                          <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Total Deal</div>
+                          <div className="text-xl font-bold text-gray-900 dark:text-gray-100">$14.7M</div>
+                          <div className="flex items-center text-xs text-green-500 mt-2">
+                            <span>Up 4% since June</span>
+                            <svg className="h-4 w-4 ml-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </div>
+                        </div>
+
+                        <div className="p-3 rounded-lg bg-gray-100 dark:bg-gray-800">
+                          <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Recruiting Revenue</div>
+                          <div className="text-xl font-bold text-gray-900 dark:text-gray-100">$25M</div>
+                          <div className="flex items-center text-xs text-red-500 mt-2">
+                            <span>Down 38% since Q4</span>
+                            <svg className="h-4 w-4 ml-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M17 7L7 17M7 17H17M7 17V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </div>
+                        </div>
+
+                        <div className="p-3 rounded-lg bg-gray-100 dark:bg-gray-800">
+                          <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Total Comp Delta</div>
+                          <div className="text-xl font-bold text-gray-900 dark:text-gray-100">$98.9M</div>
+                          <div className="flex items-center text-xs text-primary mt-2">
+                            <span>Transition | Grid | Retirement</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Chart Visualization */}
+                      <div className="bg-[#121726] dark:bg-[#121726] light:bg-[#f5f7ff] rounded-lg p-3 mb-4 h-44 relative overflow-hidden">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="grid grid-cols-2 gap-x-2 gap-y-1 w-full">
+                            <div className="flex items-center">
+                              <div className="h-2 w-2 rounded-full bg-white mr-1"></div>
+                              <span className="text-xs text-white/80">Morgan Stanley</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="h-2 w-2 rounded-full bg-blue-400 mr-1"></div>
+                              <span className="text-xs text-white/80">Merrill Lynch</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="h-2 w-2 rounded-full bg-red-400 mr-1"></div>
+                              <span className="text-xs text-white/80">UBS Wealth</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="h-2 w-2 rounded-full bg-green-400 mr-1"></div>
+                              <span className="text-xs text-white/80">LPL Financial</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="h-32 relative">
+                          {/* This is the chart graphic - fixed to match screenshot with ALL lines starting and ending at same timeframe */}
+                          <svg width="100%" height="100%" viewBox="0 0 320 110" preserveAspectRatio="none">
+                            {/* Grid lines */}
+                            <line x1="0" y1="110" x2="320" y2="110" stroke="#2a2a3c" strokeWidth="1" />
+                            <line x1="80" y1="0" x2="80" y2="110" stroke="#2a2a3c" strokeWidth="1" />
+                            <line x1="160" y1="0" x2="160" y2="110" stroke="#2a2a3c" strokeWidth="1" />
+                            <line x1="240" y1="0" x2="240" y2="110" stroke="#2a2a3c" strokeWidth="1" />
+
+                            {/* Morgan Stanley - ends lowest but close */}
+                            <path d="M0,110 L0,85 C40,88 80,75 120,80 C160,85 200,70 240,65 C280,60 320,45 320,45 L320,110 Z" fill="rgba(255,255,255,0.1)" />
+                            <path d="M0,85 C40,88 80,75 120,80 C160,85 200,70 240,65 C280,60 320,45 320,45" fill="none" stroke="white" strokeWidth="2" />
+
+                            {/* Merrill Lynch - middle trajectory */}
+                            <path d="M0,110 L0,95 C40,92 80,85 120,75 C160,70 200,60 240,55 C280,50 320,42 320,42 L320,110 Z" fill="rgba(96,165,250,0.1)" />
+                            <path d="M0,95 C40,92 80,85 120,75 C160,70 200,60 240,55 C280,50 320,42 320,42" fill="none" stroke="#60a5fa" strokeWidth="2" />
+
+                            {/* UBS - ends second highest */}
+                            <path d="M0,110 L0,90 C40,85 80,80 120,70 C160,65 200,55 240,45 C280,35 320,30 320,30 L320,110 Z" fill="rgba(248,113,113,0.1)" />
+                            <path d="M0,90 C40,85 80,80 120,70 C160,65 200,55 240,45 C280,35 320,30 320,30" fill="none" stroke="#f87171" strokeWidth="2" />
+
+                            {/* LPL - starts lowest, ends highest */}
+                            <path d="M0,110 L0,100 C40,95 80,85 120,65 C160,55 200,40 240,30 C280,25 320,20 320,20 L320,110 Z" fill="rgba(74,222,128,0.1)" />
+                            <path d="M0,100 C40,95 80,85 120,65 C160,55 200,40 240,30 C280,25 320,20 320,20" fill="none" stroke="#4ade80" strokeWidth="2" />
+                          </svg>
+                        </div>
+                      </div>
+
+                      {/* Sliders */}
+                      <div className="space-y-6 mb-4" ref={slidersRef}>
+                        {/* AUM */}
+                        <div>
+                          <div className="flex justify-between text-sm mb-3">
+                            <span className="text-gray-600 dark:text-gray-400">AUM</span>
+                            <span className="text-gray-900 dark:text-gray-100 font-medium">$120M</span>
+                          </div>
+                          <div className="slider-track">
+                            <div className="animate-slider slider-fill" style={{ '--target-width': '65%' } as React.CSSProperties}></div>
+                            <div className="slider-thumb" style={{ left: '65%' }}></div>
+                          </div>
+                        </div>
+
+                        {/* Revenue */}
+                        <div>
+                          <div className="flex justify-between text-sm mb-3">
+                            <span className="text-gray-600 dark:text-gray-400">Revenue</span>
+                            <span className="text-gray-900 dark:text-gray-100 font-medium">$1.25M</span>
+                          </div>
+                          <div className="slider-track">
+                            <div className="animate-slider slider-fill" style={{ '--target-width': '75%' } as React.CSSProperties}></div>
+                            <div className="slider-thumb" style={{ left: '75%' }}></div>
+                          </div>
+                        </div>
+
+                        {/* Payout % */}
+                        <div>
+                          <div className="flex justify-between text-sm mb-3">
+                            <span className="text-gray-600 dark:text-gray-400">Payout %</span>
+                            <span className="text-gray-900 dark:text-gray-100 font-medium">42%</span>
+                          </div>
+                          <div className="slider-track">
+                            <div className="animate-slider slider-fill" style={{ '--target-width': '42%' } as React.CSSProperties}></div>
+                            <div className="slider-thumb" style={{ left: '42%' }}></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Premium Fields Preview */}
+                      <div className="p-3 rounded-lg bg-gray-100 dark:bg-gray-800 mb-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">Advisor-Specific Calculations</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">16 premium fields</div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 rounded-full border-2 border-primary/30 flex items-center justify-center">
+                              <div className="w-2 h-2 rounded-full bg-primary opacity-70"></div>
+                            </div>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">Fee-Based %</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 rounded-full border-2 border-primary/30 flex items-center justify-center">
+                              <div className="w-2 h-2 rounded-full bg-primary opacity-70"></div>
+                            </div>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">Deferred Income</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 rounded-full border-2 border-primary/30 flex items-center justify-center">
+                              <div className="w-2 h-2 rounded-full bg-primary opacity-70"></div>
+                            </div>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">Production Mix</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 rounded-full border-2 border-primary/30 flex items-center justify-center">
+                              <div className="w-2 h-2 rounded-full bg-primary opacity-70"></div>
+                            </div>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">International %</span>
+                          </div>
+                        </div>
+                        <div className="mt-3 text-xs text-center">
+                          <Link href="/calculator">
+                            <span className="text-primary cursor-pointer hover:underline">Upgrade for detailed calculations</span>
+                          </Link>
+                        </div>
+                      </div>
+
+                      <Link href="/calculator">
+                        <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium">
+                          Customize Your Calculation
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Marketplace Section */}
+        <section className="py-24">
+          <div className="container mx-auto px-8 md:px-16 lg:px-24 max-w-5xl">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground leading-tight">
+                Practice Marketplace
+              </h2>
+              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Buy or sell financial advisor practices with our confidential marketplace designed for seamless transactions.
+              </p>
+            </div>
+
+            <div className="relative" id="marketplace-slider-container">
+              {/* Left Navigation Arrow */}
+              <div className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 hidden md:block">
+                <button 
+                  className="bg-background/80 shadow-md hover:shadow-lg border border-border/50 rounded-full p-2 text-foreground hover:bg-background transition-all duration-200"
+                  aria-label="Previous listings"
+                  onClick={() => {
+                    if (marketplaceSliderRef.current) {
+                      // Use the scrollPrev method for consistency with auto-scrolling
+                      const sliderElement = marketplaceSliderRef.current;
+                      const cards = sliderElement.querySelectorAll('.snap-start');
+                      const cardCount = cards.length;
+                      
+                      if (cardCount > 0) {
+                        // Find current visible card index
+                        const sliderRect = sliderElement.getBoundingClientRect();
+                        let currentIndex = 0;
+                        let minDistance = Infinity;
+                        
+                        cards.forEach((card, i) => {
+                          const cardRect = (card as HTMLElement).getBoundingClientRect();
+                          const distance = Math.abs(cardRect.left - sliderRect.left);
+                          if (distance < minDistance) {
+                            minDistance = distance;
+                            currentIndex = i;
+                          }
+                        });
+                        
+                        // Calculate previous index with looping
+                        const prevIndex = (currentIndex - 1 + cardCount) % cardCount;
+                        
+                        // Scroll to previous card
+                        const prevCard = cards[prevIndex] as HTMLElement;
+                        sliderElement.scrollTo({
+                          left: prevCard.offsetLeft,
+                          behavior: 'smooth'
+                        });
+                      }
+                    }
+                  }}
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Right Navigation Arrow */}
+              <div className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 hidden md:block">
+                <button 
+                  className="bg-background/80 shadow-md hover:shadow-lg border border-border/50 rounded-full p-2 text-foreground hover:bg-background transition-all duration-200"
+                  aria-label="Next listings"
+                  onClick={() => {
+                    if (marketplaceSliderRef.current) {
+                      // Use the scrollNext method for consistency with auto-scrolling
+                      const sliderElement = marketplaceSliderRef.current;
+                      const cards = sliderElement.querySelectorAll('.snap-start');
+                      const cardCount = cards.length;
+                      
+                      if (cardCount > 0) {
+                        // Find current visible card index
+                        const sliderRect = sliderElement.getBoundingClientRect();
+                        let currentIndex = 0;
+                        let minDistance = Infinity;
+                        
+                        cards.forEach((card, i) => {
+                          const cardRect = (card as HTMLElement).getBoundingClientRect();
+                          const distance = Math.abs(cardRect.left - sliderRect.left);
+                          if (distance < minDistance) {
+                            minDistance = distance;
+                            currentIndex = i;
+                          }
+                        });
+                        
+                        // Calculate next index with looping
+                        const nextIndex = (currentIndex + 1) % cardCount;
+                        
+                        // Scroll to next card
+                        const nextCard = cards[nextIndex] as HTMLElement;
+                        sliderElement.scrollTo({
+                          left: nextCard.offsetLeft,
+                          behavior: 'smooth'
+                        });
+                      }
+                    }
+                  }}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Scrollable Container */}
+              <div 
+                id="marketplace-slider"
+                className="flex overflow-x-scroll gap-6 pb-4 px-1 snap-x hide-scrollbar relative"
+                style={{ 
+                  scrollbarWidth: 'none',
+                  maxWidth: '100%',
+                  margin: '0 auto',
+                  WebkitOverflowScrolling: 'touch',
+                  msOverflowStyle: 'none',
+                  scrollSnapType: 'x mandatory'
+                }}
+                ref={marketplaceSliderRef}
+              >
+              {[
+                {
+                  title: "Wealth Management Practice",
+                  location: "Chicago, IL",
+                  aum: "$120M",
+                  revenue: "$1.2M",
+                  clients: "95",
+                  featured: true,
+                  id: "1"
+                },
+                {
+                  title: "Retirement Planning Practice",
+                  location: "Boston, MA",
+                  aum: "$85M",
+                  revenue: "$950K",
+                  clients: "78",
+                  featured: false,
+                  id: "2"
+                },
+                {
+                  title: "High-Net-Worth Practice",
+                  location: "Miami, FL",
+                  aum: "$250M",
+                  revenue: "$2.1M",
+                  clients: "65",
+                  featured: true,
+                  id: "3"
+                },
+                {
+                  title: "Investment Advisory Firm",
+                  location: "Denver, CO",
+                  aum: "$175M",
+                  revenue: "$1.7M",
+                  clients: "110",
+                  featured: false,
+                  id: "4"
+                },
+                {
+                  title: "Financial Planning Group",
+                  location: "Atlanta, GA",
+                  aum: "$140M",
+                  revenue: "$1.4M",
+                  clients: "88",
+                  featured: true,
+                  id: "5"
+                },
+                {
+                  title: "Estate Planning Specialists",
+                  location: "San Francisco, CA",
+                  aum: "$200M",
+                  revenue: "$1.9M",
+                  clients: "70",
+                  featured: false,
+                  id: "6"
+                },
+                {
+                  title: "Tax Advisory Practice",
+                  location: "Dallas, TX",
+                  aum: "$95M",
+                  revenue: "$1.1M",
+                  clients: "85",
+                  featured: true,
+                  id: "7"
+                },
+                {
+                  title: "Insurance & Wealth Firm",
+                  location: "Seattle, WA",
+                  aum: "$160M",
+                  revenue: "$1.6M",
+                  clients: "105",
+                  featured: false,
+                  id: "8"
+                },
+                {
+                  title: "Private Wealth Boutique",
+                  location: "New York, NY",
+                  aum: "$300M",
+                  revenue: "$2.8M",
+                  clients: "60",
+                  featured: true,
+                  id: "9"
+                },
+                {
+                  title: "Family Office Practice",
+                  location: "Phoenix, AZ",
+                  aum: "$220M",
+                  revenue: "$2.2M",
+                  clients: "45",
+                  featured: false,
+                  id: "10"
+                }
+              ].map((listing, index) => (
+                <motion.div
+                  key={listing.id}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.1 * (index + 1) }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  className="snap-start min-w-[300px] w-[85vw] md:w-[350px] max-w-[350px] flex-shrink-0 px-1"
+                >
+                  <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 dark:bg-card/50 bg-card/90 backdrop-blur-sm flex flex-col h-[380px]">
+                    <div className="p-6 flex flex-col flex-1">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          {listing.featured && (
+                            <motion.span
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.3, delay: 0.6 }}
+                              className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary"
+                            >
+                              Featured
+                            </motion.span>
+                          )}
+                          <h3 className="mt-3 text-xl font-semibold text-foreground">{listing.title}</h3>
+                          <p className="text-muted-foreground">{listing.location}</p>
+                        </div>
+                        <Building className={`h-10 w-10 ${listing.featured ? 'text-primary' : 'text-secondary'}`} />
+                      </div>
+
+                      <div className="space-y-3 flex-1">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">AUM:</span>
+                          <span className="text-foreground font-medium">{listing.aum}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Revenue:</span>
+                          <span className="text-foreground font-medium">{listing.revenue}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Clients:</span>
+                          <span className="text-foreground font-medium">{listing.clients}</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-6">
+                        <motion.div 
+                          whileHover={{ scale: 1.03 }} 
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => {
+                            // Use proper navigation instead of directly changing window.location
+                            // This ensures proper route handling in MarketplacePage
+                            window.location.href = `/marketplace/listing/${listing.id}`;
+                          }}
+                        >
+                          <Button className="w-full" variant="outline">
+                            View Details
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        </motion.div>
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+              </div>
+            </div>
+
+            <div className="text-center mt-12">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="font-medium px-6 py-4 border border-primary/30 hover:border-primary/60 text-foreground hover:text-foreground hover:bg-primary/5 transition-all duration-300"
+                onClick={() => window.location.href = '/marketplace'}
+              >
+                <Store className="mr-2 h-5 w-5" />
+                Explore All Listings
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* Content Section */}
+        <section className="py-24">
+          <div className="container mx-auto px-8 md:px-16 lg:px-24 max-w-5xl">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground leading-tight">
+                News & Insights
+              </h2>
+              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Expert analysis and strategies to help financial advisors optimize their practice value and career transitions.
+              </p>
+            </div>
+            
+            {(isLoadingBlog || isLoadingNews) ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mb-4"></div>
+                <p className="text-muted-foreground">Loading content...</p>
+              </div>
+            ) : (blogError || newsError) ? (
+              <div className="flex flex-col items-center justify-center py-12 px-4">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-xl w-full">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <AlertTriangle className="h-6 w-6 text-red-500 dark:text-red-400" />
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-lg font-medium text-red-800 dark:text-red-300">Content Loading Error</h3>
+                      <div className="mt-2 text-sm text-red-700 dark:text-red-300">
+                        <p>We encountered an issue while loading the latest news and insights.</p>
+                        {blogError && <p className="mt-1 font-mono text-xs opacity-70">{blogError}</p>}
+                        {newsError && <p className="mt-1 font-mono text-xs opacity-70">{newsError}</p>}
+                      </div>
+                      <div className="mt-4">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="text-red-600 dark:text-red-400 border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/30"
+                          onClick={() => window.location.reload()}
+                        >
+                          Try Again
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (blogPosts.length === 0 && newsArticles.length === 0) ? (
+              <div className="text-center py-12 max-w-lg mx-auto">
+                <div className="bg-muted/50 rounded-lg p-8 border border-border">
+                  <BookOpen className="h-16 w-16 text-muted-foreground opacity-50 mx-auto mb-4" />
+                  <h3 className="text-xl font-medium mb-2">No Content Available</h3>
+                  <p className="text-muted-foreground mb-4">
+                    We're currently updating our insights library. Check back soon for fresh content about financial advisor transitions and practice optimization.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.location.reload()}
+                    className="mt-2"
+                  >
+                    Refresh Page
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                {/* Left column with two blogs - featured and simplified */}
+                <div className="md:col-span-7 space-y-8">
+                  {/* Featured blog post with image */}
+                  {(blogPosts.length > 0 || newsArticles.length > 0) && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5 }}
+                      viewport={{ once: true, margin: "-100px" }}
+                    >
+                      <Card className="overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 flex flex-col h-full">
+                        <div className="w-full h-60 bg-muted relative">
+                          {blogPosts.length > 0 && blogPosts[0].imageUrl ? (
+                            <div 
+                              onClick={() => window.location.href = `/blog/${blogPosts[0].slug}`}
+                              className="w-full h-full cursor-pointer"
+                            >
+                              <img 
+                                src={blogPosts[0].imageUrl} 
+                                alt={blogPosts[0].title}
+                                className="object-cover h-full w-full"
+                              />
+                            </div>
+                          ) : newsArticles.length > 0 && newsArticles[0].imageUrl ? (
+                            <div 
+                              onClick={() => window.location.href = `/news/${newsArticles[0].slug}`}
+                              className="w-full h-full cursor-pointer"
+                            >
+                              <img 
+                                src={newsArticles[0].imageUrl} 
+                                alt={newsArticles[0].title}
+                                className="object-cover h-full w-full"
+                              />
+                            </div>
+                          ) : null}
+                          <div className="absolute top-4 left-4 z-10">
+                            <span className="px-2 py-1 bg-primary/90 text-white text-xs rounded">
+                              {blogPosts.length > 0 ? "Featured" : newsArticles.length > 0 ? newsArticles[0].category || "News" : "Featured"}
+                            </span>
+                          </div>
+                        </div>
+                        <CardContent className="p-6">
+                          <div className="flex items-center text-muted-foreground text-sm mb-3">
+                            <Calendar className="h-4 w-4 mr-1" />
+                            <span>
+                              {blogPosts.length > 0 && blogPosts[0].date ? 
+                                new Date(blogPosts[0].date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : 
+                                newsArticles.length > 0 && newsArticles[0].date ? 
+                                  new Date(newsArticles[0].date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : 
+                                  ""}
+                            </span>
+                          </div>
+                          <h3 
+                            onClick={() => window.location.href = blogPosts.length > 0 ? 
+                              `/blog/${blogPosts[0].slug}` : 
+                              newsArticles.length > 0 ? `/news/${newsArticles[0].slug}` : "#"}
+                            className="text-2xl font-semibold mb-3 hover:text-primary cursor-pointer transition-colors"
+                          >
+                            {blogPosts.length > 0 ? blogPosts[0].title : newsArticles.length > 0 ? newsArticles[0].title : ""}
+                          </h3>
+                          <p className="text-muted-foreground mb-6">
+                            {blogPosts.length > 0 ? blogPosts[0].excerpt : newsArticles.length > 0 ? newsArticles[0].excerpt : ""}
+                          </p>
+                          <div 
+                            onClick={() => window.location.href = blogPosts.length > 0 ? 
+                              `/blog/${blogPosts[0].slug}` : 
+                              newsArticles.length > 0 ? `/news/${newsArticles[0].slug}` : "#"}
+                            className="text-primary font-medium hover:underline inline-flex items-center cursor-pointer"
+                          >
+                            Read Full Article <ArrowRight className="ml-1 h-4 w-4" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  )}
+                  
+                  {/* Simplified blog post without image (second post) */}
+                  {(blogPosts.length > 1 || (blogPosts.length <= 0 && newsArticles.length > 1)) && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                      viewport={{ once: true, margin: "-100px" }}
+                    >
+                      <Card className="overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center text-muted-foreground text-sm">
+                              <Calendar className="h-4 w-4 mr-1" />
+                              <span>
+                                {blogPosts.length > 1 && blogPosts[1].date ? 
+                                  new Date(blogPosts[1].date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : 
+                                  (blogPosts.length <= 0 && newsArticles.length > 1) && newsArticles[1].date ? 
+                                    new Date(newsArticles[1].date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : 
+                                    ""}
+                              </span>
+                            </div>
+                            <span className="px-2 py-1 bg-secondary/90 text-white text-xs rounded">
+                              {blogPosts.length > 1 ? ('published' in blogPosts[1] ? 'Blog' : 'News') : 
+                               (blogPosts.length <= 0 && newsArticles.length > 1) ? (newsArticles[1].category || 'News') : 'Blog'}
+                            </span>
+                          </div>
+                          <h3 
+                            onClick={() => window.location.href = blogPosts.length > 1 ? 
+                              `/blog/${blogPosts[1].slug}` : 
+                              (blogPosts.length <= 0 && newsArticles.length > 1) ? `/news/${newsArticles[1].slug}` : "#"}
+                            className="text-xl font-semibold mb-3 hover:text-primary cursor-pointer transition-colors"
+                          >
+                            {blogPosts.length > 1 ? blogPosts[1].title : 
+                             (blogPosts.length <= 0 && newsArticles.length > 1) ? newsArticles[1].title : ""}
+                          </h3>
+                          <p className="text-muted-foreground mb-6">
+                            {blogPosts.length > 1 ? blogPosts[1].excerpt : 
+                             (blogPosts.length <= 0 && newsArticles.length > 1) ? newsArticles[1].excerpt : ""}
+                          </p>
+                          <div 
+                            onClick={() => window.location.href = blogPosts.length > 1 ? 
+                              `/blog/${blogPosts[1].slug}` : 
+                              (blogPosts.length <= 0 && newsArticles.length > 1) ? `/news/${newsArticles[1].slug}` : "#"}
+                            className="text-primary font-medium hover:underline inline-flex items-center cursor-pointer"
+                          >
+                            Read Full Article <ArrowRight className="ml-1 h-4 w-4" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  )}
+                </div>
+                
+                {/* Right column - News Articles */}
+                <div className="md:col-span-5 space-y-6">
+                  {/* Vertical cards for news & insights */}
+                  <div className="grid grid-cols-1 gap-4">
+                    {[...blogPosts.slice(2, 4), ...newsArticles.slice(0, 4)].slice(0, 6).map((item, index) => (
+                      <motion.div
+                        key={`content-${item.id}-${index}`}
+                        initial={{ opacity: 0, x: 20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: 0.1 * (index + 1) }}
+                        viewport={{ once: true, margin: "-100px" }}
+                      >
+                        <Card className="overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between text-muted-foreground text-xs mb-2">
+                              <div className="flex items-center">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                <span>{item.date ? new Date(item.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : ""}</span>
+                              </div>
+                              <span className={`px-2 py-1 ${index % 2 === 0 ? 'bg-primary/90' : 'bg-secondary/90'} text-white text-xs rounded`}>
+                                {'category' in item ? (item.category || 'News') : ('published' in item ? 'Blog' : 'News')}
+                              </span>
+                            </div>
+                            <h3 
+                              onClick={() => window.location.href = 'published' in item ? 
+                                `/blog/${item.slug}` : `/news/${item.slug}`}
+                              className="text-base font-semibold mb-2 line-clamp-2 hover:text-primary cursor-pointer transition-colors"
+                            >
+                              {item.title}
+                            </h3>
+                            {item.excerpt && (
+                              <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+                                {item.excerpt}
+                              </p>
+                            )}
+                            <div 
+                              onClick={() => window.location.href = 'published' in item ? 
+                                `/blog/${item.slug}` : `/news/${item.slug}`}
+                              className="text-primary text-sm font-medium hover:underline inline-flex items-center cursor-pointer"
+                            >
+                              Read Article <ArrowRight className="ml-1 h-3 w-3" />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                  
+                  {/* Category Links */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    className="mt-4"
+                  >
+                    <div className="flex flex-wrap gap-2 items-center justify-center mb-4">
+                      <span className="text-xs text-muted-foreground">Categories:</span>
+                      {['Advisor Transitions', 'Industry News', 'Practice Management', 'Technology', 'Compensation'].map((cat, i) => (
+                        <Badge key={i} variant="outline" className="cursor-pointer hover:bg-muted transition-colors">
+                          {cat}
+                        </Badge>
+                      ))}
+                    </div>
+                  </motion.div>
+                  
+                  {/* View All Button */}
+                  <div className="block mt-4 text-center">
+                    <Button 
+                      variant="outline" 
+                      className="font-medium"
+                      onClick={() => window.location.href = '/blog'}
+                    >
+                      Browse All Articles
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+        
+        {/* Free Resource (E-book) Section */}
+        <section className="py-24 bg-gradient-to-r from-primary/5 to-secondary/5">
+          <div className="container mx-auto px-8 md:px-16 lg:px-24 max-w-5xl">
+            <div className="flex flex-col lg:flex-row items-center gap-12">
+              <motion.div 
+                className="w-full lg:w-1/2 flex justify-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7 }}
+                viewport={{ once: true, margin: "-100px" }}
+              >
+                <div className="h-[500px] lg:h-[600px] relative flex items-center justify-center">
+                  {/* Background gradient element */}
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[360px] md:w-[420px] h-[500px] bg-gradient-to-r from-primary/20 to-secondary/20 rounded-xl rotate-6 shadow-lg"></div>
+                  
+                  {/* Main book element */}
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[340px] md:w-[400px] h-[500px] bg-card rounded-xl border-2 border-primary/10 shadow-xl backdrop-blur-sm overflow-hidden">
+                    {/* Colorful header */}
+                    <div className="w-full h-[45%] bg-gradient-to-r from-primary to-secondary relative">
+                      <div className="absolute inset-0 opacity-20">
+                        <svg width="100%" height="100%" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                          <path fill="none" stroke="white" strokeWidth="1" d="M0,50 Q25,25 50,50 T100,50" />
+                          <path fill="none" stroke="white" strokeWidth="1" d="M0,70 Q25,45 50,70 T100,70" />
+                          <path fill="none" stroke="white" strokeWidth="1" d="M0,30 Q25,5 50,30 T100,30" />
+                        </svg>
+                      </div>
+                      <div className="absolute bottom-6 left-6 right-6">
+                        <h4 className="text-white text-2xl font-semibold tracking-tight mb-2">Financial Advisor's Guide to Transition</h4>
+                        <p className="text-white/90 text-lg">Maximize Your Value When Changing Firms</p>
+                      </div>
+                    </div>
+                    
+                    {/* Content area */}
+                    <div className="p-6">
+                      <ul className="space-y-4">
+                        <li className="flex items-start">
+                          <CheckCircle className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+                          <span className="text-base">Complete deal structure analysis with detailed comparisons</span>
+                        </li>
+                        <li className="flex items-start">
+                          <CheckCircle className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+                          <span className="text-base">Compare top 10 firms objectively with proprietary metrics</span>
+                        </li>
+                        <li className="flex items-start">
+                          <CheckCircle className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+                          <span className="text-base">Client transition strategies to maximize retention</span>
+                        </li>
+                        <li className="flex items-start">
+                          <CheckCircle className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+                          <span className="text-base">Tax optimization guidance for each transition type</span>
+                        </li>
+                        <li className="flex items-start">
+                          <CheckCircle className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+                          <span className="text-base">Legal considerations and contract review tips</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+              
+              <motion.div 
+                className="w-full lg:w-1/2 flex justify-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+                viewport={{ once: true, margin: "-100px" }}
+              >
+                <div className="max-w-lg w-full">
+                  <h2 className="text-3xl md:text-4xl font-bold mb-4 text-center lg:text-left">Download Our Free E-Book</h2>
+                  <p className="text-muted-foreground text-lg mb-8 text-center lg:text-left">
+                    Get our comprehensive guide to navigating firm transitions, maximizing your deal value, and avoiding common pitfalls during the transition process.
+                  </p>
+                  
+                  <div className="bg-white dark:bg-card rounded-lg p-6 shadow-md">
+                    <h3 className="text-lg font-medium mb-4 text-center lg:text-left">Get Your Free Copy</h3>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 gap-4">
+                        <div>
+                          <Label htmlFor="name">Full Name</Label>
+                          <Input id="name" placeholder="Your name" />
+                        </div>
+                        <div>
+                          <Label htmlFor="email">Email Address</Label>
+                          <Input id="email" type="email" placeholder="you@example.com" />
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="terms" />
+                        <label
+                          htmlFor="terms"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          I agree to receive emails about FaAxis services and resources
+                        </label>
+                      </div>
+                      <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                        <Download className="mr-2 h-4 w-4" />
+                        Download Now
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+        
+        {/* Marketing CTA Section */}
+        <section className="py-24 bg-gradient-to-r from-primary to-secondary text-white">
+          <div className="container mx-auto px-8 md:px-16 lg:px-24 max-w-5xl">
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
+              <div className="w-full lg:w-2/3">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                >
+                  <h2 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
+                    Ready to Maximize Your Financial Practice's Value?
+                  </h2>
+                  <p className="text-white/80 text-lg md:text-xl mb-8 max-w-2xl">
+                    Join thousands of financial advisors who use our tools to make data-driven decisions about their careers and practice transitions.
+                  </p>
+                  <div className="flex flex-wrap gap-4">
+                    <Button 
+                      size="lg" 
+                      className="bg-white text-primary hover:bg-white/90 px-8"
+                      onClick={() => window.location.href = '/create-account'}
+                    >
+                      Get Started For Free
+                    </Button>
+                  </div>
+                </motion.div>
+              </div>
+              
+              <div className="w-full lg:w-1/3">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  className="bg-white/10 backdrop-blur-sm p-6 rounded-lg border border-white/20"
+                >
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div className="p-4">
+                      <div className="text-3xl md:text-4xl font-bold mb-2">
+                        <CountUp
+                          start={0}
+                          end={17}
+                          duration={2.5}
+                          prefix="$"
+                          suffix="B"
+                          useEasing={true}
+                          enableScrollSpy={true}
+                          scrollSpyDelay={500}
+                        />
+                      </div>
+                      <div className="text-white/70 text-sm">Advisor Assets Analyzed</div>
+                    </div>
+                    <div className="p-4">
+                      <div className="text-3xl md:text-4xl font-bold mb-2">
+                        <CountUp
+                          start={0}
+                          end={745}
+                          duration={2.5}
+                          suffix="+"
+                          useEasing={true}
+                          enableScrollSpy={true}
+                          scrollSpyDelay={500}
+                        />
+                      </div>
+                      <div className="text-white/70 text-sm">Financial Advisors Served</div>
+                    </div>
+                    <div className="p-4">
+                      <div className="text-3xl md:text-4xl font-bold mb-2">
+                        <CountUp
+                          start={0}
+                          end={99}
+                          duration={2}
+                          suffix="%"
+                          useEasing={true}
+                          enableScrollSpy={true}
+                          scrollSpyDelay={500}
+                        />
+                      </div>
+                      <div className="text-white/70 text-sm">Client Satisfaction</div>
+                    </div>
+                    <div className="p-4">
+                      <div className="text-3xl md:text-4xl font-bold mb-2">
+                        <CountUp
+                          start={0}
+                          end={27.9}
+                          duration={2.5}
+                          decimals={1}
+                          suffix="%"
+                          useEasing={true}
+                          enableScrollSpy={true}
+                          scrollSpyDelay={500}
+                        />
+                      </div>
+                      <div className="text-white/70 text-sm">Avg. Improved Deal Value</div>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}

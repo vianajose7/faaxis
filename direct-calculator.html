@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financial Advisor Calculator</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .card {
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    .btn-primary {
+      background-color: #1a56db;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    .btn-primary:hover {
+      background-color: #1e429f;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      margin-top: 0.25rem;
+    }
+    label {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      display: block;
+    }
+    .results-card {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.5s ease-out;
+    }
+    .results-card.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <header class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+      <div class="flex items-center">
+        <h1 class="text-2xl font-bold text-gray-900">FA Axis Calculator</h1>
+      </div>
+      <nav>
+        <ul class="flex space-x-6">
+          <li><a href="/" class="text-gray-600 hover:text-gray-900">Home</a></li>
+          <li><a href="/calculator" class="text-indigo-600 font-medium">Calculator</a></li>
+          <li><a href="/marketplace" class="text-gray-600 hover:text-gray-900">Marketplace</a></li>
+          <li><a href="/dashboard" class="text-gray-600 hover:text-gray-900">Dashboard</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-10">
+      <h2 class="text-3xl font-bold text-gray-900 mb-4">Financial Advisor Transition Calculator</h2>
+      <p class="text-lg text-gray-600 max-w-3xl">Compare transition packages and get personalized financial projections based on your practice metrics.</p>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h3 class="text-xl font-semibold mb-4">Your Information</h3>
+          <form id="calculator-form">
+            <div class="mb-4">
+              <label for="aum">Assets Under Management ($)</label>
+              <input type="text" id="aum" placeholder="e.g. 100,000,000" required>
+            </div>
+            
+            <div class="mb-4">
+              <label for="revenue">Annual Revenue ($)</label>
+              <input type="text" id="revenue" placeholder="e.g. 1,000,000" required>
+            </div>
+            
+            <div class="mb-4">
+              <label for="feeBasedPercentage">Fee-Based Percentage (%)</label>
+              <input type="number" id="feeBasedPercentage" min="0" max="100" placeholder="e.g. 80" required>
+            </div>
+            
+            <div class="mb-4">
+              <label for="currentFirm">Current Firm</label>
+              <select id="currentFirm" required>
+                <option value="">Select your current firm</option>
+                <option value="Merrill Lynch">Merrill Lynch</option>
+                <option value="Morgan Stanley">Morgan Stanley</option>
+                <option value="UBS">UBS</option>
+                <option value="Wells Fargo">Wells Fargo</option>
+                <option value="Edward Jones">Edward Jones</option>
+                <option value="Raymond James">Raymond James</option>
+                <option value="LPL Financial">LPL Financial</option>
+                <option value="Ameriprise">Ameriprise</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            
+            <div class="mb-4">
+              <label for="yearsExperience">Years of Experience</label>
+              <input type="number" id="yearsExperience" min="0" max="50" placeholder="e.g. 15" required>
+            </div>
+            
+            <button type="submit" class="btn-primary w-full mt-4">Calculate Offers</button>
+          </form>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+          <h3 class="text-xl font-semibold mb-4">Compare Firms</h3>
+          <div id="firms-to-compare" class="space-y-2">
+            <div class="flex items-center">
+              <input type="checkbox" id="firm-ms" class="firm-checkbox mr-2" value="Morgan Stanley"> 
+              <label for="firm-ms" class="font-normal cursor-pointer">Morgan Stanley</label>
+            </div>
+            <div class="flex items-center">
+              <input type="checkbox" id="firm-ml" class="firm-checkbox mr-2" value="Merrill Lynch"> 
+              <label for="firm-ml" class="font-normal cursor-pointer">Merrill Lynch</label>
+            </div>
+            <div class="flex items-center">
+              <input type="checkbox" id="firm-ubs" class="firm-checkbox mr-2" value="UBS"> 
+              <label for="firm-ubs" class="font-normal cursor-pointer">UBS</label>
+            </div>
+            <div class="flex items-center">
+              <input type="checkbox" id="firm-wf" class="firm-checkbox mr-2" value="Wells Fargo"> 
+              <label for="firm-wf" class="font-normal cursor-pointer">Wells Fargo</label>
+            </div>
+            <div class="flex items-center">
+              <input type="checkbox" id="firm-rj" class="firm-checkbox mr-2" value="Raymond James"> 
+              <label for="firm-rj" class="font-normal cursor-pointer">Raymond James</label>
+            </div>
+            <div class="flex items-center">
+              <input type="checkbox" id="firm-lpl" class="firm-checkbox mr-2" value="LPL Financial"> 
+              <label for="firm-lpl" class="font-normal cursor-pointer">LPL Financial</label>
+            </div>
+            <div class="flex items-center">
+              <input type="checkbox" id="firm-rbc" class="firm-checkbox mr-2" value="RBC"> 
+              <label for="firm-rbc" class="font-normal cursor-pointer">RBC</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="lg:col-span-2" id="results-section">
+        <div id="results-placeholder" class="bg-white rounded-lg shadow-md p-6 text-center py-16">
+          <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+          </svg>
+          <h3 class="mt-4 text-lg font-medium text-gray-900">Your Results Will Appear Here</h3>
+          <p class="mt-2 text-gray-600">Fill out the form and click "Calculate Offers" to see your personalized transition package estimates.</p>
+        </div>
+        
+        <div id="results-content" class="hidden space-y-6">
+          <div class="results-card bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-semibold mb-4">Estimated Transition Packages</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left">
+                <thead>
+                  <tr class="bg-gray-50">
+                    <th class="px-4 py-2 font-medium">Firm</th>
+                    <th class="px-4 py-2 font-medium text-right">Estimated Package</th>
+                    <th class="px-4 py-2 font-medium text-right">% of Revenue</th>
+                  </tr>
+                </thead>
+                <tbody id="results-table">
+                  <!-- Results will be populated here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div class="results-card bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-semibold mb-4">Package Comparison</h3>
+            <canvas id="comparison-chart" height="300"></canvas>
+          </div>
+          
+          <div class="results-card bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-semibold mb-4">9-Year Return Projection</h3>
+            <canvas id="projection-chart" height="300"></canvas>
+            <p class="text-sm text-gray-500 mt-4">* Projections based on industry averages and may vary based on market conditions and individual performance.</p>
+          </div>
+          
+          <div class="results-card bg-indigo-50 rounded-lg p-6 flex items-start">
+            <div class="flex-shrink-0 mr-4">
+              <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <div>
+              <h4 class="font-medium text-indigo-800">Want more detailed analysis?</h4>
+              <p class="text-indigo-700 mt-1">Our premium calculator provides enhanced projections including deferred compensation, banking benefits, and international business factors.</p>
+              <button class="mt-3 bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700" onclick="window.location.href='/checkout'">Upgrade to Premium</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-16 bg-indigo-700 rounded-lg shadow-lg p-8 text-white">
+      <div class="flex flex-col md:flex-row items-center justify-between">
+        <div class="mb-6 md:mb-0 md:mr-8">
+          <h3 class="text-2xl font-bold">Expert Consultation</h3>
+          <p class="mt-2 text-indigo-100 max-w-2xl">Get personalized guidance on your transition options. Our experts will help you evaluate offers and negotiate the best deal.</p>
+        </div>
+        <div class="flex-shrink-0">
+          <button class="bg-white text-indigo-700 px-6 py-3 rounded-md text-base font-medium hover:bg-indigo-50">Schedule a Call</button>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <footer class="bg-gray-800 text-white py-12 mt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div>
+          <h3 class="text-lg font-semibold mb-4">FA Axis</h3>
+          <p class="text-gray-300">Empowering financial advisors with the tools and insights they need to make confident career decisions.</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+          <ul class="space-y-2">
+            <li><a href="/" class="text-gray-300 hover:text-white">Home</a></li>
+            <li><a href="/calculator" class="text-gray-300 hover:text-white">Calculator</a></li>
+            <li><a href="/marketplace" class="text-gray-300 hover:text-white">Marketplace</a></li>
+            <li><a href="/blog" class="text-gray-300 hover:text-white">Blog</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+          <p class="text-gray-300">Have questions about our calculator or services?</p>
+          <a href="mailto:contact@faaxis.com" class="text-indigo-400 hover:text-indigo-300 mt-2 inline-block">contact@faaxis.com</a>
+        </div>
+      </div>
+      <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+        <p>&copy; 2025 FA Axis. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Firm data - transition package multipliers
+    const firmData = {
+      'Morgan Stanley': { multiplier: 3.0, color: '#1f77b4' },
+      'Merrill Lynch': { multiplier: 2.9, color: '#2ca02c' },
+      'UBS': { multiplier: 3.1, color: '#d62728' },
+      'Wells Fargo': { multiplier: 2.7, color: '#ff7f0e' },
+      'Raymond James': { multiplier: 2.5, color: '#9467bd' },
+      'LPL Financial': { multiplier: 1.9, color: '#8c564b' },
+      'RBC': { multiplier: 2.8, color: '#e377c2' }
+    };
+    
+    // Format currency
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('en-US', { 
+        style: 'currency', 
+        currency: 'USD',
+        maximumFractionDigits: 0
+      }).format(value);
+    }
+    
+    // Format percentage
+    function formatPercentage(value) {
+      return new Intl.NumberFormat('en-US', { 
+        style: 'percent',
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1
+      }).format(value / 100);
+    }
+    
+    // Parse currency input
+    function parseCurrencyInput(value) {
+      if (!value) return 0;
+      return parseInt(value.replace(/[$,]/g, '')) || 0;
+    }
+    
+    // Calculate transition package
+    function calculateTransitionPackage(revenue, feeBasedPercentage, firm) {
+      const multiplier = firmData[firm]?.multiplier || 2.5;
+      const feeBasedAdjustment = feeBasedPercentage / 100 * 0.5; // Higher fee-based gets better deals
+      return Math.round(revenue * (multiplier + feeBasedAdjustment));
+    }
+    
+    // Calculate 9-year projections
+    function calculateProjections(revenue, firm) {
+      const growthRates = {
+        'Morgan Stanley': [0.05, 0.06, 0.07, 0.07, 0.06, 0.06, 0.05, 0.05, 0.05],
+        'Merrill Lynch': [0.04, 0.05, 0.06, 0.06, 0.06, 0.05, 0.05, 0.04, 0.04],
+        'UBS': [0.05, 0.06, 0.07, 0.08, 0.07, 0.06, 0.06, 0.05, 0.05],
+        'Wells Fargo': [0.04, 0.05, 0.05, 0.06, 0.06, 0.05, 0.05, 0.04, 0.04],
+        'Raymond James': [0.06, 0.07, 0.08, 0.08, 0.07, 0.07, 0.06, 0.06, 0.05],
+        'LPL Financial': [0.07, 0.08, 0.09, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06],
+        'RBC': [0.05, 0.06, 0.06, 0.07, 0.07, 0.06, 0.06, 0.05, 0.05]
+      };
+      
+      const defaultGrowth = [0.05, 0.05, 0.06, 0.06, 0.06, 0.05, 0.05, 0.04, 0.04];
+      const firmGrowth = growthRates[firm] || defaultGrowth;
+      
+      let result = [];
+      let currentRevenue = revenue;
+      
+      for (let i = 0; i < 9; i++) {
+        currentRevenue = currentRevenue * (1 + firmGrowth[i]);
+        result.push(Math.round(currentRevenue));
+      }
+      
+      return result;
+    }
+    
+    // Create comparison chart
+    let comparisonChart = null;
+    function createComparisonChart(results) {
+      const ctx = document.getElementById('comparison-chart').getContext('2d');
+      
+      if (comparisonChart) {
+        comparisonChart.destroy();
+      }
+      
+      const labels = results.map(r => r.firm);
+      const data = results.map(r => r.package);
+      const colors = results.map(r => firmData[r.firm]?.color || '#888888');
+      
+      comparisonChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Transition Package',
+            data: data,
+            backgroundColor: colors,
+            borderColor: colors.map(c => c + '88'),
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '$' + (value / 1000000).toFixed(1) + 'M';
+                }
+              },
+              title: {
+                display: true,
+                text: 'Transition Package ($)'
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return formatCurrency(context.raw);
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Create projection chart
+    let projectionChart = null;
+    function createProjectionChart(selectedFirms, revenue) {
+      const ctx = document.getElementById('projection-chart').getContext('2d');
+      
+      if (projectionChart) {
+        projectionChart.destroy();
+      }
+      
+      const datasets = selectedFirms.map(firm => {
+        const projections = calculateProjections(revenue, firm);
+        return {
+          label: firm,
+          data: projections,
+          borderColor: firmData[firm]?.color || '#888888',
+          backgroundColor: (firmData[firm]?.color || '#888888') + '20',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.1
+        };
+      });
+      
+      projectionChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5', 'Year 6', 'Year 7', 'Year 8', 'Year 9'],
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              ticks: {
+                callback: function(value) {
+                  return '$' + (value / 1000000).toFixed(1) + 'M';
+                }
+              },
+              title: {
+                display: true,
+                text: 'Projected Revenue ($)'
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + formatCurrency(context.raw);
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Format currency input
+    document.getElementById('aum').addEventListener('blur', function(e) {
+      const value = parseCurrencyInput(e.target.value);
+      if (value) {
+        e.target.value = formatCurrency(value).replace('$', '');
+      }
+    });
+    
+    document.getElementById('revenue').addEventListener('blur', function(e) {
+      const value = parseCurrencyInput(e.target.value);
+      if (value) {
+        e.target.value = formatCurrency(value).replace('$', '');
+      }
+    });
+    
+    // Handle form submission
+    document.getElementById('calculator-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Get form values
+      const aum = parseCurrencyInput(document.getElementById('aum').value);
+      const revenue = parseCurrencyInput(document.getElementById('revenue').value);
+      const feeBasedPercentage = parseFloat(document.getElementById('feeBasedPercentage').value);
+      const currentFirm = document.getElementById('currentFirm').value;
+      const yearsExperience = parseInt(document.getElementById('yearsExperience').value);
+      
+      // Get selected firms
+      const firmCheckboxes = document.querySelectorAll('.firm-checkbox:checked');
+      const selectedFirms = Array.from(firmCheckboxes).map(cb => cb.value);
+      
+      // If no firms selected, use all firms
+      const firmsToCalculate = selectedFirms.length > 0 ? selectedFirms : Object.keys(firmData);
+      
+      // Calculate results
+      const results = firmsToCalculate.map(firm => {
+        const package = calculateTransitionPackage(revenue, feeBasedPercentage, firm);
+        const percentOfRevenue = (package / revenue) * 100;
+        
+        return {
+          firm: firm,
+          package: package,
+          percentOfRevenue: percentOfRevenue
+        };
+      });
+      
+      // Sort results by package value (descending)
+      results.sort((a, b) => b.package - a.package);
+      
+      // Display results
+      displayResults(results, revenue);
+    });
+    
+    // Display results
+    function displayResults(results, revenue) {
+      // Hide placeholder, show results
+      document.getElementById('results-placeholder').classList.add('hidden');
+      const resultsContent = document.getElementById('results-content');
+      resultsContent.classList.remove('hidden');
+      
+      // Populate results table
+      const resultsTable = document.getElementById('results-table');
+      resultsTable.innerHTML = '';
+      
+      results.forEach(result => {
+        const row = document.createElement('tr');
+        row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-50');
+        
+        row.innerHTML = `
+          <td class="px-4 py-3">${result.firm}</td>
+          <td class="px-4 py-3 text-right font-medium">${formatCurrency(result.package)}</td>
+          <td class="px-4 py-3 text-right">${result.percentOfRevenue.toFixed(1)}%</td>
+        `;
+        
+        resultsTable.appendChild(row);
+      });
+      
+      // Create comparison chart
+      createComparisonChart(results);
+      
+      // Create projection chart
+      createProjectionChart(results.map(r => r.firm), revenue);
+      
+      // Show results cards with animation
+      setTimeout(() => {
+        document.querySelectorAll('.results-card').forEach((card, index) => {
+          setTimeout(() => {
+            card.classList.add('show');
+          }, index * 150);
+        });
+      }, 100);
+    }
+  </script>
+</body>
+</html>

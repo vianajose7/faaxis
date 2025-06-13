@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FaAxis - Financial Advisor Transition Platform</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f5f7fb;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+    
+    header {
+      background-color: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 1rem 0;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .logo {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #0066cc;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+    
+    .nav-links a {
+      color: #555;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    .nav-links a:hover {
+      color: #0066cc;
+    }
+    
+    .hero {
+      padding: 8rem 0 5rem;
+      background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+    
+    .hero-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      max-width: 600px;
+    }
+    
+    h1 {
+      font-size: 3rem;
+      color: #2d3748;
+      line-height: 1.2;
+    }
+    
+    .hero p {
+      font-size: 1.2rem;
+      color: #4a5568;
+    }
+    
+    .cta-button {
+      display: inline-block;
+      background-color: #0066cc;
+      color: white;
+      padding: 0.8rem 2rem;
+      border-radius: 5px;
+      font-weight: 600;
+      text-decoration: none;
+      margin-top: 1rem;
+      transition: background-color 0.3s;
+    }
+    
+    .cta-button:hover {
+      background-color: #0055aa;
+    }
+    
+    .features {
+      padding: 5rem 0;
+      background-color: white;
+    }
+    
+    .section-title {
+      text-align: center;
+      font-size: 2.2rem;
+      margin-bottom: 3rem;
+      color: #2d3748;
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+    
+    .feature-card {
+      background-color: #f8f9fa;
+      border-radius: 10px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      transition: transform 0.3s;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .feature-card h3 {
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+      color: #2d3748;
+    }
+    
+    .feature-card p {
+      color: #4a5568;
+    }
+    
+    .testimonials {
+      padding: 5rem 0;
+      background-color: #f8f9fa;
+    }
+    
+    .testimonial-carousel {
+      overflow: hidden;
+      position: relative;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    
+    .testimonial-container {
+      display: flex;
+      transition: transform 0.5s ease;
+    }
+    
+    .testimonial {
+      flex-shrink: 0;
+      width: 100%;
+      padding: 2rem;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      margin: 0 1rem;
+    }
+    
+    .testimonial p {
+      font-style: italic;
+      margin-bottom: 1rem;
+    }
+    
+    .testimonial-author {
+      font-weight: 600;
+      color: #2d3748;
+    }
+    
+    .blog-section {
+      padding: 5rem 0;
+      background-color: white;
+    }
+    
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+    
+    .blog-card {
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    
+    .blog-image {
+      height: 200px;
+      background-color: #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6c757d;
+    }
+    
+    .blog-content {
+      padding: 1.5rem;
+    }
+    
+    .blog-title {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+      color: #2d3748;
+    }
+    
+    .blog-excerpt {
+      color: #4a5568;
+      margin-bottom: 1rem;
+    }
+    
+    .blog-link {
+      color: #0066cc;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    footer {
+      background-color: #2d3748;
+      color: white;
+      padding: 3rem 0;
+    }
+    
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+    }
+    
+    .footer-section h3 {
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+    }
+    
+    .footer-links {
+      list-style: none;
+    }
+    
+    .footer-links li {
+      margin-bottom: 0.5rem;
+    }
+    
+    .footer-links a {
+      color: #cbd5e0;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    
+    .footer-links a:hover {
+      color: white;
+    }
+    
+    .copyright {
+      margin-top: 2rem;
+      text-align: center;
+      color: #cbd5e0;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .nav-links {
+        gap: 1rem;
+      }
+      
+      h1 {
+        font-size: 2.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-content">
+      <div class="logo">FaAxis</div>
+      <nav class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#testimonials">Testimonials</a>
+        <a href="#blog">Blog</a>
+        <a href="/admin-login">Admin Login</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1>Maximize Your Financial Practice's Value</h1>
+        <p>The leading platform for financial advisors looking to transition, recruit, or sell their practice. Get data-driven insights for your career decisions.</p>
+        <a href="/admin-login" class="cta-button">Get Started</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="features">
+    <div class="container">
+      <h2 class="section-title">Why Choose FaAxis</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <h3>Financial Practice Valuation</h3>
+          <p>Get accurate, market-based valuations for your financial practice based on current industry data and proven metrics.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Transition Planning</h3>
+          <p>Comprehensive transition planning tools to help you move your practice with minimal client attrition.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Firm Comparison</h3>
+          <p>Compare compensation packages and transition deals across major financial firms to make informed decisions.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Practice Marketplace</h3>
+          <p>Browse active listings or list your own practice for sale in our curated marketplace for financial advisors.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="testimonials" class="testimonials">
+    <div class="container">
+      <h2 class="section-title">What Advisors Say</h2>
+      <div class="testimonial-carousel">
+        <div class="testimonial-container" id="testimonialContainer">
+          <div class="testimonial">
+            <p>"FaAxis helped me negotiate a transition package that was 22% higher than my initial offer. Their data-driven approach gave me the confidence to ask for what I was worth."</p>
+            <div class="testimonial-author">— Michael R., Wealth Manager</div>
+          </div>
+          <div class="testimonial">
+            <p>"When selling my practice after 30 years, I needed to ensure my clients would be taken care of. FaAxis helped me find the perfect buyer and maximize my practice value."</p>
+            <div class="testimonial-author">— Susan T., Financial Advisor</div>
+          </div>
+          <div class="testimonial">
+            <p>"The comprehensive firm comparison data was invaluable during my transition. I was able to make an informed decision based on real compensation metrics."</p>
+            <div class="testimonial-author">— David K., Portfolio Manager</div>
+          </div>
+          <div class="testimonial">
+            <p>"After 15 years at a wirehouse, I was nervous about transitioning to independence. FaAxis guided me through every step, making the process seamless and profitable."</p>
+            <div class="testimonial-author">— Jennifer L., Independent Advisor</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="blog" class="blog-section">
+    <div class="container">
+      <h2 class="section-title">Latest Industry Insights</h2>
+      <div class="blog-grid">
+        <div class="blog-card">
+          <div class="blog-image">Financial News</div>
+          <div class="blog-content">
+            <h3 class="blog-title">Wells Fargo Welcomes $6.7M Team from Morgan Stanley</h3>
+            <p class="blog-excerpt">A veteran team has joined Wells Fargo Advisors, bringing $6.7 million in production and significant AUM from Morgan Stanley.</p>
+            <a href="/blog" class="blog-link">Read More →</a>
+          </div>
+        </div>
+        <div class="blog-card">
+          <div class="blog-image">Strategic Updates</div>
+          <div class="blog-content">
+            <h3 class="blog-title">LPL Financial Announces New Strategic Partnership</h3>
+            <p class="blog-excerpt">LPL Financial has formed a strategic partnership to enhance technology solutions for independent financial advisors.</p>
+            <a href="/blog" class="blog-link">Read More →</a>
+          </div>
+        </div>
+        <div class="blog-card">
+          <div class="blog-image">Industry Moves</div>
+          <div class="blog-content">
+            <h3 class="blog-title">Morgan Stanley Team Joins UBS</h3>
+            <p class="blog-excerpt">A veteran team with over $500M in AUM has transitioned from Morgan Stanley to UBS.</p>
+            <a href="/blog" class="blog-link">Read More →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>FaAxis</h3>
+          <p>The leading financial advisor transition platform with 10+ years experience helping advisors maximize their practice value.</p>
+        </div>
+        <div class="footer-section">
+          <h3>Services</h3>
+          <ul class="footer-links">
+            <li><a href="#">Practice Valuation</a></li>
+            <li><a href="#">Firm Comparison</a></li>
+            <li><a href="#">Transition Planning</a></li>
+            <li><a href="#">Marketplace Access</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Resources</h3>
+          <ul class="footer-links">
+            <li><a href="/blog">Blog</a></li>
+            <li><a href="#">Webinars</a></li>
+            <li><a href="#">Guides</a></li>
+            <li><a href="#">Case Studies</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Contact</h3>
+          <ul class="footer-links">
+            <li><a href="#">Support</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="copyright">
+        © 2025 FaAxis. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Simple testimonial carousel
+    document.addEventListener('DOMContentLoaded', function() {
+      const testimonialContainer = document.getElementById('testimonialContainer');
+      const testimonials = testimonialContainer.querySelectorAll('.testimonial');
+      let currentIndex = 0;
+      const testimonialWidth = testimonials[0].offsetWidth;
+      
+      // Set initial position
+      testimonialContainer.style.transform = `translateX(0)`;
+      
+      // Automatic scroll every 3 seconds
+      setInterval(function() {
+        currentIndex = (currentIndex + 1) % testimonials.length;
+        const offset = -currentIndex * testimonialWidth;
+        testimonialContainer.style.transform = `translateX(${offset}px)`;
+        console.log(`Scrolling to testimonial ${currentIndex}, position: ${offset}px`);
+      }, 3000);
+    });
+  </script>
+</body>
+</html>

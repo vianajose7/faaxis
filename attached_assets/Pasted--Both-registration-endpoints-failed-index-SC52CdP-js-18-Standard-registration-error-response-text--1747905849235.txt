@@ -1,0 +1,162 @@
+❌ Both registration endpoints failed
+index-SC52CdP_.js:18 Standard registration error response text: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /api/register</pre>
+</body>
+</html>
+
+index-SC52CdP_.js:18 🔶 Starting registration mutation with data: {username: 'jfhoncto@gmail.com', hasPassword: true, fields: Array(5)}
+index-SC52CdP_.js:18 🔄 Sending registration API request to JWT endpoint
+index-SC52CdP_.js:18 AuthPage component rendered
+index-SC52CdP_.js:368 
+            
+            
+           POST https://faaxis.com/api/jwt/register 404 (Not Found)
+yu @ index-SC52CdP_.js:368
+mutationFn @ index-SC52CdP_.js:368
+fn @ index-SC52CdP_.js:368
+y @ index-SC52CdP_.js:368
+start @ index-SC52CdP_.js:368
+execute @ index-SC52CdP_.js:368
+await in execute
+mutate @ index-SC52CdP_.js:368
+b @ index-SC52CdP_.js:387
+await in b
+g4 @ index-SC52CdP_.js:38
+y4 @ index-SC52CdP_.js:38
+x4 @ index-SC52CdP_.js:38
+w1 @ index-SC52CdP_.js:38
+$E @ index-SC52CdP_.js:38
+(anonymous) @ index-SC52CdP_.js:38
+Fx @ index-SC52CdP_.js:41
+uE @ index-SC52CdP_.js:38
+Rp @ index-SC52CdP_.js:38
+fx @ index-SC52CdP_.js:38
+D4 @ index-SC52CdP_.js:38Understand this error
+index-SC52CdP_.js:18 ❌ Registration error caught: Error: 404: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /api/jwt/register</pre>
+</body>
+</html>
+
+    at P$ (index-SC52CdP_.js:368:45675)
+    at async yu (index-SC52CdP_.js:368:46660)
+    at async Object.mutationFn (index-SC52CdP_.js:368:52838)
+console.error @ index-SC52CdP_.js:18
+mutationFn @ index-SC52CdP_.js:368
+await in mutationFn
+fn @ index-SC52CdP_.js:368
+y @ index-SC52CdP_.js:368
+start @ index-SC52CdP_.js:368
+execute @ index-SC52CdP_.js:368
+await in execute
+mutate @ index-SC52CdP_.js:368
+b @ index-SC52CdP_.js:387
+await in b
+g4 @ index-SC52CdP_.js:38
+y4 @ index-SC52CdP_.js:38
+x4 @ index-SC52CdP_.js:38
+w1 @ index-SC52CdP_.js:38
+$E @ index-SC52CdP_.js:38
+(anonymous) @ index-SC52CdP_.js:38
+Fx @ index-SC52CdP_.js:41
+uE @ index-SC52CdP_.js:38
+Rp @ index-SC52CdP_.js:38
+fx @ index-SC52CdP_.js:38
+D4 @ index-SC52CdP_.js:38Understand this error
+index-SC52CdP_.js:18 AuthPage component rendered
+index-SC52CdP_.js:18 🔶 Starting registration mutation with data: {username: 'jfhoncto@gmail.com', hasPassword: true, fields: Array(5)}fields: Array(5)0: "username"1: "password"2: "firstName"3: "lastName"4: "phone"length: 5[[Prototype]]: Array(0)hasPassword: trueusername: "jfhoncto@gmail.com"[[Prototype]]: Object
+index-SC52CdP_.js:18 🔄 Sending registration API request to JWT endpoint
+index-SC52CdP_.js:368 
+            
+            
+           POST https://faaxis.com/api/jwt/register 404 (Not Found)
+yu @ index-SC52CdP_.js:368
+mutationFn @ index-SC52CdP_.js:368
+fn @ index-SC52CdP_.js:368
+y @ index-SC52CdP_.js:368
+(anonymous) @ index-SC52CdP_.js:368
+Promise.then
+(anonymous) @ index-SC52CdP_.js:368
+Promise.catch
+y @ index-SC52CdP_.js:368
+start @ index-SC52CdP_.js:368
+execute @ index-SC52CdP_.js:368
+await in execute
+mutate @ index-SC52CdP_.js:368
+b @ index-SC52CdP_.js:387
+await in b
+g4 @ index-SC52CdP_.js:38
+y4 @ index-SC52CdP_.js:38
+x4 @ index-SC52CdP_.js:38
+w1 @ index-SC52CdP_.js:38
+$E @ index-SC52CdP_.js:38
+(anonymous) @ index-SC52CdP_.js:38
+Fx @ index-SC52CdP_.js:41
+uE @ index-SC52CdP_.js:38
+Rp @ index-SC52CdP_.js:38
+fx @ index-SC52CdP_.js:38
+D4 @ index-SC52CdP_.js:38Understand this error
+index-SC52CdP_.js:18 ❌ Registration error caught: Error: 404: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /api/jwt/register</pre>
+</body>
+</html>
+
+    at P$ (index-SC52CdP_.js:368:45675)
+    at async yu (index-SC52CdP_.js:368:46660)
+    at async Object.mutationFn (index-SC52CdP_.js:368:52838)
+console.error @ index-SC52CdP_.js:18
+mutationFn @ index-SC52CdP_.js:368
+await in mutationFn
+fn @ index-SC52CdP_.js:368
+y @ index-SC52CdP_.js:368
+(anonymous) @ index-SC52CdP_.js:368
+Promise.then
+(anonymous) @ index-SC52CdP_.js:368
+Promise.catch
+y @ index-SC52CdP_.js:368
+start @ index-SC52CdP_.js:368
+execute @ index-SC52CdP_.js:368
+await in execute
+mutate @ index-SC52CdP_.js:368
+b @ index-SC52CdP_.js:387
+await in b
+g4 @ index-SC52CdP_.js:38
+y4 @ index-SC52CdP_.js:38
+x4 @ index-SC52CdP_.js:38
+w1 @ index-SC52CdP_.js:38
+$E @ index-SC52CdP_.js:38
+(anonymous) @ index-SC52CdP_.js:38
+Fx @ index-SC52CdP_.js:41
+uE @ index-SC52CdP_.js:38
+Rp @ index-SC52CdP_.js:38
+fx @ index-SC52CdP_.js:38
+D4 @ index-SC52CdP_.js:38Understand this error
+index-SC52CdP_.js:18 ❌ Registration error: Error: 404: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /api/jwt/register</pre>
+</body>
+</html>
+
+    at Object.mutationFn (index-SC52CdP_.js:368:54929)

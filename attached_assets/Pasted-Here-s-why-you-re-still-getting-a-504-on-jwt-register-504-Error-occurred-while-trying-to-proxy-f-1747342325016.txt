@@ -1,0 +1,91 @@
+Here’s why you’re still getting a 504 on /jwt/register:
+
+504 Error occurred while trying to proxy: faaxis.com/jwt/register
+
+That means your front-end hit your simple-production-server.js proxy at /jwt/register, but that proxy never reached a live backend to answer.
+
+⸻
+
+1) Fork the real API server on a known port
+
+Make sure you actually spawn your compiled API bundle (dist/index.js) on, say, port 5001:
+
+// simple-production-server.js
+import { fork } from 'child_process';
+import path from 'path';
+
+// decide ports
+const PORT     = process.env.PORT     || 3000;
+const API_PORT = process.env.API_PORT || 5001;
+
+// fork your dist/index.js so that it listens on API_PORT
+const apiScript = path.join(__dirname, 'dist/index.js');
+const apiProcess = fork(apiScript, [], {
+  env: { ...process.env, PORT: API_PORT.toString() },
+  stdio: 'inherit'
+});
+apiProcess.on('error', (err) => console.error('❌ API process error:', err));
+
+Put that before you start your Express proxy server.
+
+⸻
+
+2) Proxy the exact path your SPA is calling
+
+Your SPA is POSTing to /jwt/register (not /api/jwt/register), so you need to mount your proxy on both /api and /jwt (or whatever prefixes you actually use):
+
+import express from 'express';
+import { createProxyMiddleware } from 'http-proxy-middleware';
+
+const app = express();
+
+// health‐check & static serving here…
+
+// forward anything under /api to your API process
+app.use(
+  '/api',
+  createProxyMiddleware({
+    target: `http://localhost:${API_PORT}`,
+    changeOrigin: true,
+    logLevel: 'debug',
+  })
+);
+
+// **also** forward your JWT routes
+app.use(
+  '/jwt',
+  createProxyMiddleware({
+    target: `http://localhost:${API_PORT}`,
+    changeOrigin: true,
+    logLevel: 'debug',
+  })
+);
+
+// SPA fallback here…
+
+That logLevel: 'debug' will print you the full “→ proxying /jwt/register” and either a successful 200 or the upstream error.
+
+⸻
+
+Deploy & test
+	1.	Build everything
+
+npm ci && ./build-and-deploy-fixed.sh
+
+
+	2.	Start in production
+
+NODE_ENV=production API_PORT=5001 node simple-production-server.js
+
+
+	3.	Hit your signup
+
+curl -v -XPOST http://localhost:3000/jwt/register \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"you@example.com","password":"hunter2"}'
+
+You should see your Express backend’s logs (inherited stdio) and a 200 response instead of the 504.
+
+⸻
+
+Once that’s in place, your /jwt/register call will actually land in your real dist/index.js routes, and your registration form will work again. Let me know if you need help tweaking any of those paths or following the debug logs!

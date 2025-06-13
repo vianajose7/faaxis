@@ -1,0 +1,7 @@
+{
+  "extends": ["react-app", "plugin:@typescript-eslint/recommended", "plugin:import/recommended"],
+  "rules": {
+    "@typescript-eslint/no-use-before-define": "error",
+    "import/no-cycle": "error"
+  }
+}

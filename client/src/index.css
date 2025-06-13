@@ -1,0 +1,715 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap');
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Checkout page animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes testimonialSlide {
+  0%, 5% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  10%, 30% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  35%, 100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@layer base {
+  /* Dark mode (default) - Custom theme based on design specs */
+  :root,
+  .dark-mode {
+    /* Main dark theme background gradient colors */
+    --bg-gradient-top: 230 20% 7%;    /* #0D0F18 */
+    --bg-gradient-bottom: 233 32% 11%; /* #121424 */
+
+    /* Text colors - Improved for better readability */
+    --foreground: 0 0% 100%;          /* #FFFFFF */
+    --muted-foreground: 220 14% 80%;  /* Increased lightness for better readability */
+
+    /* UI Colors */
+    --background: 230 20% 7%;         /* Dark background #0D0F18 */
+    --card: 233 23% 15%;              /* Slightly lighter for better contrast */
+    --card-foreground: 0 0% 100%;     /* White text on cards */
+    --popover: 233 23% 15%;           /* Match card background */
+    --popover-foreground: 0 0% 100%;  /* White text on popovers */
+
+    /* Accent colors */
+    --primary: 255 100% 70%;          /* Slightly brighter #755CFF */
+    --primary-dark: 255 90% 35%;      /* Darker variation of primary for better contrast */
+    --primary-foreground: 0 0% 100%;  /* White text on primary */
+
+    --secondary: 202 100% 68%;        /* Slightly brighter #45C8FF */
+    --secondary-foreground: 0 0% 100%;/* White text on secondary */
+
+    /* Success/Danger colors */
+    --success: 131 88% 60%;           /* #43F04F - success green */
+    --destructive: 357 88% 63%;       /* #F04452 - danger red */
+    --destructive-foreground: 0 0% 100%;
+
+    --muted: 233 23% 20%;             /* Slightly lighter for better contrast */
+
+    --accent: 255 100% 70%;           /* Same as primary for consistency */
+    --accent-foreground: 0 0% 100%;   /* White text on accent */
+
+    --border: 233 23% 25%;            /* Lighter borders for better visibility */
+    --input: 233 23% 25%;             /* Lighter input borders */
+    --ring: 255 100% 70%;             /* Match primary for focus rings */
+
+    /* Chart colors */
+    --chart-1: 0 0% 100%;
+    --chart-2: 202 100% 68%;          /* secondary color */
+    --chart-3: 255 100% 70%;          /* primary color */
+    --chart-4: 131 88% 60%;           /* success color */
+    --chart-5: 357 88% 63%;           /* destructive color */
+
+    /* Sidebar colors */
+    --sidebar-background: 230 20% 7%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 255 100% 70%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 202 100% 68%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 233 23% 25%;
+    --sidebar-ring: 255 100% 70%;
+
+    --radius: 0.75rem;                /* 12px rounded corners */
+  }
+
+  /* Light mode - enhanced for better readability */
+  .light-mode {
+    /* Light theme background */
+    --bg-gradient-top: 0 0% 100%;     /* White */
+    --bg-gradient-bottom: 210 20% 98%; /* Very light blue-gray */
+
+    /* Text colors - Improved for better contrast */
+    --foreground: 230 20% 10%;        /* Darker text for better contrast */
+    --muted-foreground: 220 14% 30%;  /* Darker muted text */
+
+    /* UI Colors */
+    --background: 210 20% 98%;        /* Very light blue-gray */
+    --card: 0 0% 100%;                /* White cards */
+    --card-foreground: 230 20% 10%;   /* Dark text on cards */
+    --popover: 0 0% 100%;             /* White popovers */
+    --popover-foreground: 230 20% 10%; /* Dark text on popovers */
+
+    /* Accent colors - keeping the same but ensuring good contrast */
+    --primary: 255 100% 65%;          /* Slightly darker for better contrast on light backgrounds */
+    --primary-dark: 255 90% 30%;      /* Darker variation of primary for better contrast */
+    --primary-foreground: 0 0% 100%;  /* White text on primary */
+
+    --secondary: 202 100% 60%;        /* Slightly darker for better contrast */
+    --secondary-foreground: 0 0% 100%; /* White text on secondary */
+
+    --muted: 240 5% 90%;              /* Very light gray for muted areas */
+    --muted-foreground: 240 5% 30%;   /* Darker for better contrast */
+
+    --accent: 255 100% 65%;           /* Same as primary */
+    --accent-foreground: 0 0% 100%;   /* White text on accent */
+
+    --destructive: 357 88% 60%;       /* Slightly darker destructive color */
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 131 88% 55%;           /* Slightly darker success color */
+
+    --border: 240 5% 80%;             /* Slightly darker border for visibility */
+    --input: 240 5% 80%;              /* Matching border color */
+    --ring: 255 100% 65%;             /* Match primary */
+
+    /* Chart colors - adjusted for light theme */
+    --chart-1: 230 20% 10%;
+    --chart-2: 202 100% 60%;
+    --chart-3: 255 100% 65%;
+    --chart-4: 131 88% 55%;
+    --chart-5: 357 88% 60%;
+
+    /* Sidebar colors - adjusted for light theme */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 230 20% 10%;
+    --sidebar-primary: 255 100% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 202 100% 60%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 240 5% 80%;
+    --sidebar-ring: 255 100% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  /* Custom background gradient based on theme with smooth transition */
+  body {
+    @apply font-sans antialiased text-foreground;
+    font-family: 'Inter', 'Roboto', sans-serif;
+    background: linear-gradient(to bottom, hsl(var(--bg-gradient-top)), hsl(var(--bg-gradient-bottom))) fixed;
+    transition: background 0.3s ease, color 0.3s ease;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    width: 100%;
+  }
+  
+  /* Ensure all containers respect the viewport width */
+  html {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* Help speed up text color transitions */
+  a, p, h1, h2, h3, h4, h5, h6, span, button {
+    transition: color 0.3s ease, background-color 0.3s ease;
+  }
+
+  /* Set a default focus for all interactive elements */
+  button, a {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/80;
+  }
+
+  /* Focus styles for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary/80 ring-offset-2 ring-offset-background;
+  }
+
+  /* Component style overrides */
+  .card {
+    @apply shadow-[rgba(0,0,0,0.6)_0px_4px_20px];
+  }
+
+  /* Subtle entrance animations */
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out forwards;
+  }
+  
+  .animate-fadeIn {
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  /* Hide scrollbars but keep functionality */
+  .scrollbar-hide, .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;     /* Firefox */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar, .hide-scrollbar::-webkit-scrollbar {
+    display: none;             /* Chrome, Safari and Opera */
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes softBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-soft-bounce {
+  animation: softBounce 3s ease-in-out infinite;
+}
+
+/* Animation delays for staggered animations */
+.animation-delay-100 {
+  animation-delay: 100ms;
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animation-delay-400 {
+  animation-delay: 400ms;
+}
+
+.animation-delay-500 {
+  animation-delay: 500ms;
+}
+
+/* Text truncation */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
+/* Architectural grid pattern for background */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(var(--foreground), 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(var(--foreground), 0.1) 1px, transparent 1px);
+}
+
+/* Blueprint animation for architectural drawing */
+.animate-draw-2s {
+  stroke-dasharray: 2000;
+  stroke-dashoffset: 2000;
+  animation: draw 2s ease-in-out forwards;
+}
+
+.animate-draw-3s {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: draw 3s ease-in-out forwards;
+}
+
+.animate-draw-4s {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: draw 4s ease-in-out forwards;
+}
+
+.animate-draw-5s {
+  stroke-dasharray: 500;
+  stroke-dashoffset: 500;
+  animation: draw 5s ease-in-out forwards;
+}
+
+.animate-draw-6s {
+  stroke-dasharray: 500;
+  stroke-dashoffset: 500;
+  animation: draw 6s ease-in-out forwards;
+}
+
+.animate-draw-7s {
+  stroke-dasharray: 500;
+  stroke-dashoffset: 500;
+  animation: draw 7s ease-in-out forwards;
+}
+
+.animate-draw-8s {
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+  animation: draw 8s ease-in-out forwards;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animation-delay-500 {
+  animation-delay: 500ms;
+}
+
+.animation-delay-600 {
+  animation-delay: 600ms;
+}
+
+.animation-delay-700 {
+  animation-delay: 700ms;
+}
+
+.animation-delay-800 {
+  animation-delay: 800ms;
+}
+
+.animation-delay-900 {
+  animation-delay: 900ms;
+}
+
+.animation-delay-1000 {
+  animation-delay: 1000ms;
+}
+
+.animation-delay-1100 {
+  animation-delay: 1100ms;
+}
+
+.animation-delay-1200 {
+  animation-delay: 1200ms;
+}
+
+.animate-fade-in {
+  opacity: 0;
+  animation: fadeIn 1s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Enhanced slider animations */
+@keyframes width-expand {
+  0% {
+    width: 0%;
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  100% {
+    width: var(--target-width);
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes left-move {
+  0% {
+    left: 0%;
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    left: var(--target-position);
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.slider-track {
+  height: 0.5rem;
+  background: hsl(var(--primary) / 0.1);
+  border-radius: 9999px;
+  overflow: visible;
+  position: relative;
+  transition: all 0.3s ease;
+  margin: 0.625rem 0;
+}
+
+.slider-thumb {
+  height: 0.75rem;
+  width: 0.75rem;
+  background: hsl(var(--primary));
+  border-radius: 9999px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  position: absolute;
+  top: -0.125rem;
+  transform: translate(-50%, 0);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  z-index: 10;
+}
+
+.slider-thumb:hover {
+  transform: translateY(-50%) scale(1.1);
+}
+
+.slider-fill {
+  height: 100%;
+  background: hsl(var(--primary));
+  border-radius: 9999px;
+  transform-origin: left;
+}
+
+.animate-slider {
+  animation: none;
+  opacity: 0;
+}
+
+.animate-slider.visible {
+  animation: width-expand 1s ease-out 0.5s forwards;
+  opacity: 0;
+}
+
+.animate-thumb.visible {
+  animation: left-move 1s ease-out 0.5s forwards;
+  opacity: 0;
+}
+
+/* Fix for mobile horizontal scroll issues */
+.container {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+  max-width: 85% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Fix for all sections to prevent horizontal overflow */
+section {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Make sure content is contained within parents */
+.mobile-container-fix {
+  max-width: 85% !important;
+  overflow-x: hidden;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Allow scrolling in marketplace slider while constraining its parent */
+#marketplace-slider {
+  overflow-x: auto !important;
+}
+
+#marketplace-slider-container {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* Fix for card overflow issues */
+.card, 
+.card-content, 
+.tabs-content, 
+.tab-content {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Fix for dashboard layout */
+.dashboard-container {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+/* Ensure all flex containers don't cause overflow */
+.flex, 
+.flex-row, 
+.flex-col {
+  max-width: 100%;
+}
+
+/* Fix for grid layouts that might cause overflow */
+.grid {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Make scrollable containers properly contained */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Make sure all images are responsive and don't overflow */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Add extra protection to components with horizontal scrolling */
+[data-horizontal-scroll="true"] {
+  overflow-x: auto;
+}
+
+/* All other elements should be contained */
+[data-horizontal-scroll="false"] {
+  overflow-x: hidden;
+}
+
+/* Background pattern for checkout */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Add fadeIn animation */
+.animate-fadeIn {
+  animation: fadeIn 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Testimonial carousel styling */
+.testimonial-carousel {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.testimonial-slide {
+  height: 3rem;
+  width: 100%;
+  flex: 0 0 auto;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.testimonial-slide p {
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* Stripe element fixes */
+.StripeElement {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  min-height: 40px;
+}
+
+.StripeElement--focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.StripeElement--invalid {
+  border-color: #ef4444;
+}
+
+/* Enhanced Stripe styling */
+.stripe-container {
+  width: 100%;
+  min-height: 300px;
+  position: relative;
+  z-index: 10;
+}
+
+.stripe-form {
+  width: 100%;
+}
+
+/* Ensure payment elements are properly displayed */
+#payment-element {
+  min-height: 200px;
+}
+
+/* Improve visibility of Stripe elements */
+div[id^="stripe-"] {
+  background-color: transparent !important;
+}
+
+/* Fix font color in payment elements */
+.stripe-container * {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}

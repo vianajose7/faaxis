@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login Test</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+    pre { background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    .button { padding: 10px 15px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    .button:hover { background: #45a049; }
+    .warning { color: #f44336; }
+  </style>
+</head>
+<body>
+  <h1>Login/Registration Redirect Test</h1>
+  
+  <div id="authStatus">Checking auth status...</div>
+  
+  <h2>Current Authentication</h2>
+  <div id="currentAuth">Loading...</div>
+  
+  <h2>Test Login API</h2>
+  <button class="button" onclick="testLoginAPI()">Test Login API</button>
+  <div id="loginApiResult"></div>
+  
+  <h2>Test Login Form Submission</h2>
+  <button class="button" onclick="testLoginFormSubmission()">Test Login Form</button>
+  <div id="loginFormResult"></div>
+  
+  <script>
+    // Check current auth status
+    function checkAuthStatus() {
+      const authToken = document.cookie.includes('auth_token');
+      const userInStorage = localStorage.getItem('user');
+      
+      document.getElementById('authStatus').innerHTML = 
+        authToken ? '<b style="color:green">✓ You are authenticated</b>' : '<b style="color:red">✗ Not authenticated</b>';
+      
+      document.getElementById('currentAuth').innerHTML = `
+        <p>Auth token in cookies: <b>${authToken ? 'Yes' : 'No'}</b></p>
+        <p>User in localStorage: <b>${userInStorage ? 'Yes' : 'No'}</b></p>
+        ${userInStorage ? '<pre>' + JSON.stringify(JSON.parse(userInStorage), null, 2) + '</pre>' : ''}
+      `;
+    }
+    
+    // Test login API endpoint
+    async function testLoginAPI() {
+      const resultDiv = document.getElementById('loginApiResult');
+      resultDiv.innerHTML = '<p>Testing login API...</p>';
+      
+      try {
+        const response = await fetch('/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: 'test@example.com',
+            password: 'test123'
+          })
+        });
+        
+        const data = await response.json();
+        resultDiv.innerHTML = `
+          <p>Status: <b>${response.status} ${response.statusText}</b></p>
+          <p>Response:</p>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+          <p>Look for:</p>
+          <ul>
+            <li>success: true</li>
+            <li>redirect: "/dashboard"</li>
+          </ul>
+        `;
+      } catch (error) {
+        resultDiv.innerHTML = `<p class="warning">Error: ${error.message}</p>`;
+      }
+    }
+    
+    // Test login form submission
+    function testLoginFormSubmission() {
+      const resultDiv = document.getElementById('loginFormResult');
+      resultDiv.innerHTML = '<p>Creating login form and submitting...</p>';
+      
+      // Create a hidden form
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/login';
+      form.style.display = 'none';
+      
+      // Add username field
+      const usernameInput = document.createElement('input');
+      usernameInput.type = 'text';
+      usernameInput.name = 'username';
+      usernameInput.value = 'test@example.com';
+      form.appendChild(usernameInput);
+      
+      // Add password field
+      const passwordInput = document.createElement('input');
+      passwordInput.type = 'password';
+      passwordInput.name = 'password';
+      passwordInput.value = 'test123';
+      form.appendChild(passwordInput);
+      
+      // Note about redirect
+      resultDiv.innerHTML = `
+        <p>Form created and will submit. If redirect works correctly, you'll be sent to dashboard immediately.</p>
+        <p>If you stay on this page, the redirect isn't working properly.</p>
+      `;
+      
+      // Add to document and submit
+      document.body.appendChild(form);
+      setTimeout(() => {
+        form.submit();
+      }, 1000);
+    }
+    
+    // Run auth check on load
+    window.onload = checkAuthStatus;
+  </script>
+</body>
+</html>

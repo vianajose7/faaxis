@@ -1,0 +1,65 @@
+You’re seeing that error because there is no dist/server/routes.js – your esbuild step only emitted dist/index.js. You need to import registerRoutes from dist/index.js instead.
+
+In production-deployment.js, replace this block:
+
+    console.log('▶️  Attempting to import registerRoutes function...');
+    let registerRoutes;
+    try {
+      // 1st try: named export
+      ({ registerRoutes } = await import('./dist/server/routes.js'));
+      console.log('✔️  Imported named registerRoutes');
+    } catch (e1) {
+      console.warn('⚠️  Named export not found, trying default export...');
+      try {
+        // 2nd try: default export
+        ({ default: registerRoutes } = await import('./dist/server/routes.js'));
+        console.log('✔️  Imported default export as registerRoutes');
+      } catch (e2) {
+        throw e2;
+      }
+    }
+
+with this:
+
+    console.log('▶️  Attempting to import registerRoutes function from dist/index.js...');
+    let registerRoutes;
+    try {
+      const mod = await import('./dist/index.js');
+      if (typeof mod.registerRoutes === 'function') {
+        registerRoutes = mod.registerRoutes;
+        console.log('✔️  Imported named registerRoutes');
+      } else if (typeof mod.default === 'function') {
+        registerRoutes = mod.default;
+        console.log('✔️  Imported default export as registerRoutes');
+      } else {
+        throw new Error('`registerRoutes` not found in dist/index.js');
+      }
+    } catch (err) {
+      console.error('❌  Failed to import registerRoutes:', err);
+      throw err;
+    }
+
+So:
+	1.	Open production-deployment.js in your editor.
+	2.	Locate the code where you import('./dist/server/routes.js').
+	3.	Replace it with the snippet above that points at ./dist/index.js.
+	4.	Save the file.
+
+Then in your shell just run:
+
+node production-deployment.js
+
+You should see:
+
+▶️  production-deployment.js starting…
+▶️  Attempting to import registerRoutes function from dist/index.js...
+✔️  Imported named registerRoutes
+✔️  Server listening on port 3000
+
+Finally, re-verify:
+
+curl -I http://localhost:3000/health   # 200
+curl -I http://localhost:3000/         # 200
+curl -I http://localhost:3000/api/health  # 200
+
+That will eliminate the “Cannot find module …dist/server/routes.js” error.

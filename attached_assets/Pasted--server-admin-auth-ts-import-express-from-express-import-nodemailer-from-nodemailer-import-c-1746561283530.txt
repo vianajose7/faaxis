@@ -1,0 +1,80 @@
+// server/admin-auth.ts
+import express from 'express';
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
+import session from 'express-session';
+
+const router = express.Router();
+
+// in-memory store for OTPs (or use Redis for production)
+const pendingOtps = new Map<string, { code: string; expires: number }>();
+
+// configure mailer
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_SMTP_HOST,
+  port: +process.env.EMAIL_SMTP_PORT!,
+  auth: {
+    user: process.env.EMAIL_SMTP_USER,
+    pass: process.env.EMAIL_SMTP_PASS,
+  },
+});
+
+// session middleware (add in server/index.ts before routes)
+router.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'changeme',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }, // set secure:true in prod w/ HTTPS
+  })
+);
+
+// 1) step‑1: submit admin password
+router.post('/admin/request‑otp', (req, res) => {
+  const { password, email } = req.body;
+  if (password !== process.env.ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Invalid password' });
+  }
+
+  // generate 6‑digit code
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const key = crypto.randomUUID();
+  pendingOtps.set(key, { code, expires: Date.now() + 5 * 60 * 1000 });
+
+  // send email
+  transporter.sendMail({
+    from: process.env.EMAIL_FROM,
+    to: email,
+    subject: 'Your admin login code',
+    text: `Your FA Axis admin code is ${code}. It expires in 5 minutes.`,
+  });
+
+  // return a reference so client can verify
+  res.json({ otpKey: key });
+});
+
+// 2) step‑2: verify OTP
+router.post('/admin/verify‑otp', (req, res) => {
+  const { otpKey, code } = req.body;
+  const entry = pendingOtps.get(otpKey);
+  if (!entry || entry.expires < Date.now() || entry.code !== code) {
+    return res.status(401).json({ error: 'Invalid or expired code' });
+  }
+  pendingOtps.delete(otpKey);
+
+  // mark session as authenticated
+  req.session.isAdmin = true;
+  res.json({ success: true });
+});
+
+// 3) middleware to protect admin routes
+export function requireAdmin(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  if (req.session.isAdmin) return next();
+  return res.status(403).send('Forbidden');
+}
+
+export default router;

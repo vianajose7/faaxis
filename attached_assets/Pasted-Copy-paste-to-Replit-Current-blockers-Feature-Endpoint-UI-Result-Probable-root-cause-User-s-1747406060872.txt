@@ -1,0 +1,71 @@
+Copy‑paste to Replit ⤵
+
+⸻
+
+Current blockers
+
+Feature	Endpoint / UI	Result	Probable root cause
+User sign‑up	POST /api/auth/register (Signup form)	504 / hangs	registerRoutes(app,server) not actually wired when we switched to one‑server.js
+Stripe payment	POST /api/create-payment-intent & web‑checkout	404	Stripe routes never mounted → same missing registerRoutes call (or body‑parser mismatch for Stripe)
+
+Both symptoms mean our compiled dist/index.js is not attaching its API routers to the Express instance created in one‑server.js.
+
+⸻
+
+Fix (no roll‑backs, no hacks)
+	1.	one‑server.js – mount the real API before SPA fallback
+
+import express        from 'express';
+import http           from 'http';
+import path           from 'path';
+import { fileURLToPath } from 'url';
+
+// env
+process.env.NODE_ENV = 'production';
+process.env.PORT   ??= 3000;
+const PORT = Number(process.env.PORT);
+
+// --- base app --------------------------------------------------
+const app    = express();
+const server = http.createServer(app);
+
+app.use(express.json({ limit:'1mb' }));
+app.use(express.urlencoded({ extended:false }));
+
+// --- mount compiled API + websockets ---------------------------
+// dist/index.js exports registerRoutes(app, server)
+const { registerRoutes } = await import('./dist/index.js');
+registerRoutes(app, server);             // 👈 ATTACH **before** static
+
+// --- static + SPA fallback ------------------------------------
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const publicDir = path.join(__dirname,'dist','public');
+app.use(express.static(publicDir));
+
+app.get('/health', (_req,res)=>res.status(200).send('OK'));
+
+app.get('*', (_req,res) =>
+  res.sendFile(path.join(publicDir,'index.html'))
+);
+
+// --- start -----------------------------------------------------
+server.listen(PORT, () =>
+  console.log(`[prod] unified server up on :${PORT}`)
+);
+
+
+	2.	dist/index.ts (source) already exports registerRoutes(app,server); do NOT start a second app.listen there (keep the compiled code as is).
+	3.	Stripe body parsing – inside routes/stripe.ts make sure router.post('/stripe-webhook', express.raw({type:'application/json'}), …) is still using express.raw, not express.json, so signature verification passes.
+	4.	Deployment commands remain
+
+Build: npm ci && npm run build
+Run  : node one-server.js
+Health: /health → 200
+
+Why this works
+	•	one-server.js is the only listener – no port conflicts.
+	•	Real API & Stripe routes come from registerRoutes, so signup and /create-payment-intent exist again.
+	•	Stripe env keys are already present; webhook/body‑parser mismatch solved.
+	•	SPA fallback intact, so front‑end keeps working.
+
+Please apply this exact patch, redeploy, and ping me – I’ll immediately run a live signup + $1 charge to confirm.

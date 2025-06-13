@@ -1,0 +1,115 @@
+#################  SINGLE‑SOURCE TASK LIST FOR THE REPLIT AGENT  #################
+
+***WORK ONLY ON WHAT IS WRITTEN BELOW – NO EXTRA “IMPROVEMENTS” OR RANDOM RENAMES***
+
+-------------------------------------------------------------------------------
+0)  KEEP THE CALCULATOR WORKING  
+    • Never touch server/calculator logic or the shared firm list.  
+    • All UI changes must read from the existing `firmList` that powers the calculator.
+
+-------------------------------------------------------------------------------
+1)  FIRM PROFILES GRID  
+    • client/src/pages/firm-profiles-page.tsx  
+      – Replace `sampleFirms` import with the real shared list:  
+        `import { firmList } from '@shared/firmList';`  
+      – Render all items (`firmList.length`) – no hard‑coded 8 or 16.
+
+-------------------------------------------------------------------------------
+2)  HOMEPAGE  
+    a. Marketplace / testimonials carousel  
+       • client/src/components/MarketplaceCarousel.tsx  
+         – slidesToShow = 10  
+         – Autoplay every 2 s, loop = true, pauseOnHover = true  
+    b. News section fallback  
+       • server/api-routes/news.ts (or where /api/news lives)  
+         – Wrap DB call in try/catch; if empty/error → call  
+           `newsRepository.initializeArticlesIfNeeded(3)` and return the list.  
+    c. Bottom “Get Started For Free” button  
+       • client/src/pages/home-page.tsx  
+         – onClick navigate('/create-account').
+
+-------------------------------------------------------------------------------
+3)  NAVIGATION / CTA  
+    a. Checkout & Login pages – back link at top if missing  
+       • checkout-page.tsx, login-page.tsx  
+         `<Link to="/" className="text-sm text-muted-foreground hover:underline">← Back</Link>`  
+    b. Marketing page buttons  
+       • client/src/pages/marketing-page.tsx  
+         – “Get Started” buttons → `/checkout?plan=marketing-basic` etc.  
+         – “Read Full Case Study” buttons:  
+           first → `/case-studies/google-ads`  
+           second → `/case-studies/content`  
+           third  → `/case-studies/social-media`  
+    c. Create two simple stub pages under client/src/pages/case-studies/ with an H1 so
+       the links don’t 404.
+
+-------------------------------------------------------------------------------
+4)  CALCULATOR UI  
+    a. Current Firm dropdown  
+       • client/src/components/Calculator/CurrentFirmSelect.tsx  
+         – Map over `firmList` instead of hard‑coded “Other”.  
+    b. Backend breakdown table readability  
+       • client/src/components/Calculator/BackendBreakdown.tsx  
+         – Row striping (`i%2` bg‑gray‑50) and text‑gray‑800 / dark:text‑gray‑200.
+
+-------------------------------------------------------------------------------
+5)  PAYMENTS  
+    • Await live Stripe keys – do **NOT** hard‑code anything.  
+    • Code already reads `process.env.STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` and  
+      `import.meta.env.VITE_STRIPE_PUBLIC_KEY`; no changes until keys are supplied.
+
+-------------------------------------------------------------------------------
+6)  PLACEHOLDER EMAILS  
+    • ONLY change the login/registration inputs:  
+      – placeholder = `warren.b@valueinvesting.com`  
+    • REVERT the accidental changes you made elsewhere (careers, feedback page, CMS,  
+      practice dialogs).  Those placeholders should remain what they were before you
+      touched them.
+
+-------------------------------------------------------------------------------
+7)  SUBMIT‑A‑FIRM FORM  
+    • client/src/pages/submit-firm.tsx  
+      – `website` field required  
+      – Add fields: totalDeal, upfrontDeal, notes, cellPhone, “OK to call?” checkbox  
+      – Submit POST to `/api/submit-firm` **without** redirecting to checkout.
+
+-------------------------------------------------------------------------------
+8)  BLOG 404  
+    • client/src/pages/Blog.tsx  
+      – Add loading spinner and empty‑state message instead of throwing error when
+        `/api/news` returns empty.  Keep existing fetch logic.
+
+-------------------------------------------------------------------------------
+9)  LAYOUT TWEAKS  
+    a. About page heading  
+       • client/src/pages/about-page.tsx – wrap H1 in `div className="mx-auto max-w-3xl text-center"`  
+    b. Ensure firm profiles grid uses CSS grid that auto‑wraps for any number of firms.
+
+-------------------------------------------------------------------------------
+10)  BUILD / RUN & PORTS  
+     • **DO NOT** modify `.replit` run line (already `npm run dev` for dev).  
+     • Deployment tab should keep:  
+       Build command `npm ci && npm run build`  
+       Run command `node production-deployment.js`  
+     • production-deployment.js must keep `const PORT = process.env.PORT || 5000`  
+       and must **not** import WebSocket code.  (This is already done – verify only.)
+
+-------------------------------------------------------------------------------
+11)  CLEAN‑UP OF ACCIDENTAL CHANGES  
+     • Revert any placeholder emails you introduced that are **not** in login/register.  
+     • Do not rename variables, folders, or routes.  
+     • Do not touch any auth, Stripe, or DB logic.
+
+-------------------------------------------------------------------------------
+COMMIT ORDER (one PR / one commit each is fine)
+   1. firm‑profiles grid
+   2. homepage fixes (carousel, news, CTA)
+   3. nav/CTA links + case‑study stubs
+   4. calculator UI tweaks
+   5. placeholder email cleanup
+   6. submit‑firm overhaul
+   7. blog loading fallback
+   8. layout tweaks
+   9. verify build/run scripts, no port conflicts
+
+### END OF TASK LIST – EXECUTE EXACTLY AS WRITTEN. ###
